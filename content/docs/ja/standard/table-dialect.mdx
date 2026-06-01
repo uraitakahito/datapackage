@@ -1,0 +1,642 @@
+---
+title: Table Dialect
+description: Table Dialect は、表形式データがファイル内にどのように格納されているかを記述する。CSV のような区切りテキストファイル、JSON や YAML のような半構造化フォーマット、Microsoft Excel のようなスプレッドシートをサポートする。本仕様は、単一の JSON 互換ディスクリプタとして表現できるように設計されている。
+sidebar:
+  order: 3
+profile: /profiles/2.0/tabledialect.json
+authors:
+  - Rufus Pollock
+  - Paul Walsh
+  - Adam Kariv
+  - Evgeny Karev
+  - Peter Desmet
+  - Kyle Husmann
+  - Data Package Working Group
+---
+
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳である。
+> 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照のこと。
+
+<table>
+  <tr>
+    <th>Authors</th>
+    <td>{frontmatter.authors.join(", ")}</td>
+  </tr>
+  <tr>
+    <th>Profile</th>
+    <td>
+      <a href={frontmatter.profile}>{frontmatter.profile}</a>
+    </td>
+  </tr>
+</table>
+
+<p>{frontmatter.description}</p>
+
+## 言語 {#language}
+
+本ドキュメント内のキーワード `MUST`、`MUST NOT`、`REQUIRED`、`SHALL`、`SHALL NOT`、`SHOULD`、`SHOULD NOT`、`RECOMMENDED`、`MAY`、`OPTIONAL` は、[RFC 2119](https://www.ietf.org/rfc/rfc2119.txt) に記述されているとおりに解釈されなければならない。
+
+## はじめに {#introduction}
+
+Table Dialect は、CSV、JSON、Excel などのさまざまな[表形式データ](/standard/glossary/#tabular-data)フォーマットにおいてデータの相互運用性を確保するために、データ生成者およびデータ利用者が使用できる一連のプロパティを定義する。本仕様の主たる目的は、表形式データの dialect を定義するための共通言語を定義することである。
+
+すべてのプロパティがすべてのデータパッケージ実装によってサポートされることは期待されていない。実装は、関連する機能の一部がサポートされていない場合に、その旨をユーザーに伝えるための最も適切な方策を選択しなければならない (`MUST`)。
+
+Table Dialect は、複数の dialect の表形式ファイルを扱わなければならない場合があるものの、特定の入力ストリームでどの dialect が使われるかをあらかじめ(out-of-band で)知らされることに依拠できるプログラムにとって有用である。これにより、dialect のヒューリスティックな推論の必要性が低減され、dialect の推論、スキーマの推論、シーク不可能な入力ストリーム、文字エンコーディングの問題、および非常に大きな入力ストリームの遅延読み込みを同時にこなさなければならないリーダーの実装が簡素化される。
+
+:::note[後方互換性]
+Table Dialect は [CSV Dialect](https://specs.frictionlessdata.io/csv-dialect/) を置き換える。削除された `caseSensitiveHeader` と `csvddfVersion` を除き、すべての CSV Dialect プロパティは Table Dialect に含まれており、変更なしに使用できる。
+:::
+
+## ディスクリプタ {#descriptor}
+
+Table Dialect のディスクリプタ(descriptor)は、[ディスクリプタ](/standard/glossary/#descriptor)の定義に従ったディスクリプタでなければならない (`MUST`)。ディスクリプタに含めることができる標準プロパティの一覧は、[プロパティ](#properties)のセクションで定義されている。
+
+Table Dialect ディスクリプタの例:
+
+```json
+{
+  "header": false,
+  "delimiter": ";",
+  "quoteChar": "'"
+}
+```
+
+## 表形式データのフォーマット {#tabular-data-formats}
+
+Table Dialect は、区切りテキストファイル、半構造化フォーマット、スプレッドシートなど、さまざまなデータフォーマットに使用できる。一部の[プロパティ](#properties)は汎用的で複数のフォーマットに使用できる一方、ほかのプロパティは特定のフォーマットに固有である。
+
+任意のデータフォーマットに適用できないプロパティは無視されなければならない (`MUST`)。たとえば、SQL データベースにはヘッダー行という概念が存在しない。
+
+簡潔さのため、ほとんどの例は CSV データフォーマットで記述されている。たとえば、Table Dialect プロパティを一切指定しないこのデータファイル:
+
+```csv
+id,name
+1,apple
+2,organe
+```
+
+は、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+### 区切り (Delimited) {#delimited}
+
+区切り (Delimited) フォーマットは、CSV や TSV などのテキストフォーマットのグループである。その特性は次のプロパティで表現できる:
+
+- [$schema](#dollar-schema): デフォルトは `https://datapackage.org/profiles/1.0/tabledialect.json`
+- [header](#header): デフォルトは `true`
+- [headerRows](#headerRows): デフォルトは `1`
+- [headerJoin](#headerJoin): デフォルトは ` `
+- [commentRows](#commentRows): デフォルトは未定義
+- [commentChar](#commentChar): デフォルトは未定義
+- [delimiter](#delimiter): デフォルトは `,`
+- [lineTerminator](#lineTerminator): デフォルトは `\r\n`
+- [quoteChar](#quoteChar): デフォルトは `"`
+- [doubleQuote](#doubleQuote): デフォルトは `true`
+- [escapeChar](#escapeChar): デフォルトは未定義
+- [nullSequence](#nullSequence): デフォルトは未定義
+- [skipInitialSpace](#skipInitialSpace): デフォルトは `false`
+
+CSV フォーマット向けに適切に定義された Table Dialect ディスクリプタの例:
+
+```json
+{
+  "header": false,
+  "commentChar": "#"
+  "delimiter": ";",
+  "doubleQuote": true,
+  "lineTerminator": "\r\n",
+  "quoteChar": "\"",
+  "skipInitialSpace": true,
+}
+```
+
+### 構造化 (Structured) {#structured}
+
+構造化 (Structured) フォーマットは、JSON や YAML などの構造化または半構造化フォーマットのグループである。その特性は次のプロパティで表現できる:
+
+- [$schema](#dollar-schema): デフォルトは `https://datapackage.org/profiles/1.0/tabledialect.json`
+- [header](#header): デフォルトは `true`
+- [property](#property): デフォルトは未定義
+- [itemType](#itemType): デフォルトは未定義
+- [itemKeys](#itemKeys): デフォルトは未定義
+
+### スプレッドシート (Spreadsheet) {#spreadsheet}
+
+スプレッドシート (Spreadsheet) フォーマットは、Excel や ODS などのシートベースのフォーマットのグループである。その特性は次のプロパティで表現できる:
+
+- [$schema](#dollar-schema): デフォルトは `https://datapackage.org/profiles/1.0/tabledialect.json`
+- [header](#header): デフォルトは `true`
+- [headerRows](#headerRows): デフォルトは `1`
+- [headerJoin](#headerJoin): デフォルトは ` `
+- [commentRows](#commentRows): デフォルトは未定義
+- [commentChar](#commentChar): デフォルトは未定義
+- [sheetNumber](#sheetNumber): デフォルトは `1`
+- [sheetName](#sheetName): デフォルトは未定義
+
+### データベース (Database) {#database}
+
+データベース (Database) フォーマットは、SQLite のようなデータベースからデータにアクセスするフォーマットのグループである。その特性は次のプロパティで表現できる:
+
+- [$schema](#dollar-schema): デフォルトは `https://datapackage.org/profiles/1.0/tabledialect.json`
+- [table](#table): デフォルトは未定義
+
+## プロパティ {#properties}
+
+### `$schema` {#dollar-schema}
+
+ルートレベルの Table Dialect ディスクリプタは `$schema` プロパティを持ってもよく (`MAY`)、それは[プロファイル](/standard/glossary/#profile)の定義に従ったプロファイルでなければならず (`MUST`)、本仕様で要求されるすべてのメタデータ制約を含まなければならない (`MUST`)。
+
+デフォルト値は `https://datapackage.org/profiles/1.0/tabledialect.json` であり、推奨値は `https://datapackage.org/profiles/2.0/tabledialect.json` である。
+
+### `header`
+
+Table Dialect ディスクリプタは `header` プロパティを持ってもよく (`MAY`)、それはデフォルト値が `true` のブール値でなければならない (`MUST`)。このプロパティは、ファイルがヘッダー行を含むかどうかを示す。`true` の場合、ファイル内の最初の行はデータではなくヘッダー行として解釈されなければならない (`MUST`)。
+
+たとえば、このデータファイル:
+
+```csv
+1,apple
+2,orange
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "header": false
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{field1: 1, field2: "apple"}
+{field1: 2, field2: "orange"}
+```
+
+ここで `field1` と `field2` という名前は実装固有であり、ここでは説明のためだけに使用されている。
+
+### `headerRows` {#headerRows}
+
+Table Dialect ディスクリプタは `headerRows` プロパティを持ってもよく (`MAY`)、それは 1 から始まる正の整数の配列でなければならず (`MUST`)、デフォルト値は `[1]` である。このプロパティは、ヘッダーの行番号を指定する。複数行ヘッダーのファイルに使用することが推奨される (`RECOMMENDED`)。
+
+たとえば、このデータファイル:
+
+```csv
+fruit
+id,name
+1,apple
+2,orange
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "headerRows": [1, 2]
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{"fruit id": 1, "fruit name": "apple"}
+{"fruit id": 2, "fruit name": "orange"}
+```
+
+### `headerJoin` {#headerJoin}
+
+Table Dialect ディスクリプタは `headerJoin` プロパティを持ってもよく (`MAY`)、それはデフォルト値が `" "` の文字列でなければならない (`MUST`)。このプロパティは、複数行ヘッダーのファイルが結果として得られるヘッダー行をどのように結合するかを指定する。
+
+たとえば、このデータファイル:
+
+```csv
+fruit
+id,name
+1,apple
+2,orange
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "headerRows": [1, 2],
+  "headerJoin": "-"
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{"fruit-id": 1, "fruit-name": "apple"}
+{"fruit-id": 2, "fruit-name": "orange"}
+```
+
+### `commentRows` {#commentRows}
+
+Table Dialect ディスクリプタは `commentRows` プロパティを持ってもよく (`MAY`)、それは 1 から始まる正の整数の配列でなければならない (`MUST`)。デフォルトは未定義である。このプロパティは、どの行をデータから省略するかを指定する。
+
+たとえば、このデータファイル:
+
+```csv
+id,name
+#fruits
+1,apple
+2,orange
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "commentRows": [2]
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+### `commentChar` {#commentChar}
+
+Table Dialect ディスクリプタは `commentChar` プロパティを持ってもよく (`MAY`)、それは 1 文字以上の文字列でなければならない (`MUST`)。デフォルトは未定義である。このプロパティは、行の先頭の文字に基づいて、どの行をデータから省略するかを指定する。
+
+たとえば、このデータファイル:
+
+```csv
+id,name
+#fruits
+1,apple
+2,orange
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "commentChar": "#"
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+### `delimiter`
+
+Table Dialect ディスクリプタは `delimiter` プロパティを持ってもよく (`MAY`)、それは文字列でなければならない (`MUST`)。デフォルト値は `,`(カンマ)である。このプロパティは、データファイル内でフィールドを区切る文字列を指定する。
+
+たとえば、このデータファイル:
+
+```csv
+id|name
+1|apple
+2|orange
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "delimiter": "|"
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+### `lineTerminator` {#lineTerminator}
+
+Table Dialect ディスクリプタは `lineTerminator` プロパティを持ってもよく (`MAY`)、それは文字列でなければならない (`MUST`)。デフォルト値は `\r\n` である。このプロパティは、行を終端する文字列を指定する。
+
+たとえば、このデータファイル:
+
+```csv
+id,name;1,apple;2,orange
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "lineTerminator": ";"
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+### `quoteChar` {#quoteChar}
+
+Table Dialect ディスクリプタは `quoteChar` プロパティを持ってもよく (`MAY`)、それはデフォルト値が `"`(二重引用符)の 1 文字の文字列でなければならない (`MUST`)。このプロパティは、`delimiter` をデータセル内で使用する必要がある場合に、引用に使用する文字を指定する。
+
+たとえば、このデータファイル:
+
+```csv
+id,name
+1,'apple,fruits'
+2,'orange,fruits'
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "quoteChar": "'"
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple,fruits"}
+{id: 2, name: "orange,fruits"}
+```
+
+### `doubleQuote` {#doubleQuote}
+
+Table Dialect ディスクリプタは `doubleQuote` プロパティを持ってもよく (`MAY`)、それはデフォルト値が `true` のブール値でなければならない (`MUST`)。このプロパティは、データセル内の `quoteChar` の扱いを制御する。true の場合、連続する 2 つの引用符は 1 つとして解釈される。
+
+たとえば、このデータファイル:
+
+```csv
+id,name
+1,"apple""fruits"
+2,"orange""fruits"
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "doubleQuote": true
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: 'apple"fruits'}
+{id: 2, name: 'orange"fruits'}
+```
+
+### `escapeChar` {#escapeChar}
+
+Table Dialect ディスクリプタは `escapeChar` プロパティを持ってもよく (`MAY`)、それは 1 文字の文字列でなければならない (`MUST`)。デフォルトは未定義である。このプロパティは、エスケープに使用する 1 文字の文字列(たとえば `\`)を指定し、`quoteChar` とは相互に排他的である。
+
+たとえば、このデータファイル:
+
+```csv
+id,name
+1,apple|,fruits
+2,orange|,fruits
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "escapeChar": "|"
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple,fruits"}
+{id: 2, name: "orange,fruits"}
+```
+
+### `nullSequence` {#nullSequence}
+
+Table Dialect ディスクリプタは `nullSequence` プロパティを持ってもよく (`MAY`)、それは文字列でなければならない (`MUST`)。デフォルトは未定義である。このプロパティは、null を表すシーケンス(たとえば `\N`)を指定する。
+
+たとえば、このデータファイル:
+
+```csv
+id,name
+1,apple
+2,NA
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "nullSequence": "NA"
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: null}
+```
+
+### `skipInitialSpace` {#skipInitialSpace}
+
+Table Dialect ディスクリプタは `skipInitialSpace` プロパティを持ってもよく (`MAY`)、それはデフォルト値が `false` のブール値でなければならない (`MUST`)。このプロパティは、区切り文字の直後に続く空白の解釈方法を指定する。`false` の場合、区切り文字の直後の空白は後続のフィールドの一部として扱われることを意味する。
+
+たとえば、このデータファイル:
+
+```csv
+id, name
+1, apple
+2, orange
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "skipInitialSpace": true
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+### `property`
+
+Table Dialect ディスクリプタは `property` プロパティを持ってもよく (`MAY`)、それは文字列でなければならない (`MUST`)。デフォルトは未定義である。このプロパティは、データ構造内でデータ配列がどこに位置するかを指定する。
+
+たとえば、このデータファイル:
+
+```json
+{
+  "rows": [
+    { "id": 1, "name": "apple" },
+    { "id": 2, "name": "orange" }
+  ]
+}
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "property": "rows"
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+### `itemType` {#itemType}
+
+Table Dialect ディスクリプタは `itemType` プロパティを持ってもよく (`MAY`)、それは値が `array` または `object` の文字列でなければならない (`MUST`)。デフォルトは未定義である。このプロパティは、データの `property` が配列の配列を含むか、オブジェクトの配列を含むかを指定する。
+
+たとえば、このデータファイル:
+
+```json
+[
+  ["id", "name"],
+  [1, "apple"],
+  [2, "orange"]
+]
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "itemType": "array"
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+### `itemKeys` {#itemKeys}
+
+Table Dialect ディスクリプタは `itemKeys` プロパティを持ってもよく (`MAY`)、それは文字列の配列でなければならない (`MUST`)。デフォルトは未定義である。このプロパティは、`itemType` が `object` のデータ配列から行を抽出する方法を指定する。
+
+たとえば、このデータファイル:
+
+```json
+[
+  { "name": "apple", "id": 1, "count": 2 },
+  { "id": 2, "name": "orange", "count": 5 }
+]
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "itemKeys": ["id", "name"]
+}
+```
+
+と組み合わせると、次のデータを出力するべきである (`SHOULD`):
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+### `sheetNumber` {#sheetNumber}
+
+Table Dialect ディスクリプタは `sheetNumber` プロパティを持ってもよく (`MAY`)、それはデフォルト値が `1` の整数でなければならない (`MUST`)。このプロパティは、スプレッドシートファイル内のテーブルのシート番号を指定する。
+
+たとえば、このデータファイル:
+
+```txt
+Sheet 1
+Sheet 2
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "sheetNumber": 2
+}
+```
+
+と組み合わせると、2 番目のシートのデータを出力するべきである (`SHOULD`)。
+
+### `sheetName` {#sheetName}
+
+Table Dialect ディスクリプタは `sheetName` プロパティを持ってもよく (`MAY`)、それは文字列でなければならない (`MUST`)。デフォルトは未定義である。このプロパティは、スプレッドシートファイル内のテーブルのシート名を指定する。
+
+たとえば、このデータファイル:
+
+```txt
+Sheet 1
+Sheet 2
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "sheetName": "Sheet 2"
+}
+```
+
+と組み合わせると、2 番目のシートのデータを出力するべきである (`SHOULD`)。
+
+### `table`
+
+Table Dialect ディスクリプタは `table` プロパティを持ってもよく (`MAY`)、それは文字列でなければならない (`MUST`)。デフォルトは未定義である。このプロパティは、データベース内のテーブルの名前を指定する。
+
+たとえば、以下のテーブルを持つデータベース:
+
+```txt
+table1
+table2
+```
+
+を、この dialect 定義:
+
+```json
+{
+  "table": "table2"
+}
+```
+
+と組み合わせると、2 番目のテーブルのデータを出力するべきである (`SHOULD`)。
+
+## 対象外 {#excluded}
+
+Table Dialect は、CSV ファイル内のヘッダーやデータの名前・内容・型とは無関係であり(代わりに[テーブルスキーマ](/standard/table-schema/)を参照)、それがどのようにフォーマットされているかのみを扱う。ただし、Table Dialect は [RFC4180](http://www.ietf.org/rfc/rfc4180.txt) と同様に、ヘッダーの有無を指定することは許容する。
+
+Table Dialect はまた、CSV ファイルで使用される文字エンコーディングとも直交している。CSV フォーマットのファイルが複数のエンコーディングのデータを含むことが可能である点に注意すること。
+
+## 参考文献 {#references}
+
+関連するいくつかの作業は、[類似の JSON フォーマット](http://panda.readthedocs.org/en/latest/api.html#data-uploads)および Python の [PEP 305](http://www.python.org/dev/peps/pep-0305/) に見られる。

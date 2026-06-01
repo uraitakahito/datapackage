@@ -1,0 +1,294 @@
+---
+title: データパッケージ
+description: 一貫したデータの集まりを単一のパッケージとして記述するためのシンプルなコンテナフォーマット。データセットの配布、インストール、管理を容易にするための基盤を提供する。
+sidebar:
+  order: 1
+profile: /profiles/2.0/datapackage.json
+authors:
+  - Rufus Pollock
+  - Paul Walsh
+  - Adam Kariv
+  - Evgeny Karev
+  - Peter Desmet
+  - Data Package Working Group
+---
+
+<table>
+  <tr>
+    <th>Authors</th>
+    <td>{frontmatter.authors.join(", ")}</td>
+  </tr>
+  <tr>
+    <th>Profile</th>
+    <td>
+      <a href={frontmatter.profile}>{frontmatter.profile}</a>
+    </td>
+  </tr>
+</table>
+
+<p>{frontmatter.description}</p>
+
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳です。
+> 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照してください。
+
+## 言語 {#language}
+
+本文書におけるキーワード `MUST`、`MUST NOT`、`REQUIRED`、`SHALL`、`SHALL NOT`、`SHOULD`、`SHOULD NOT`、`RECOMMENDED`、`MAY`、`OPTIONAL` は、[RFC 2119](https://www.ietf.org/rfc/rfc2119.txt) に記述されているとおりに解釈されるものとする。
+
+## はじめに {#introduction}
+
+データパッケージは以下から構成される。
+
+- パッケージの構造と内容を記述するメタデータ
+- パッケージの内容を成すデータファイルなどのリソース
+
+データパッケージのメタデータは「ディスクリプタ(descriptor)」に格納される。このディスクリプタこそが、データの集まりをデータパッケージたらしめるものである。このディスクリプタの構造が、以下の仕様の主たる内容である。
+
+このディスクリプタに加えて、データパッケージはデータファイルなどの他のリソースを含む。データパッケージ仕様はそれらの形式や構造に対して一切の要件を課さないため、**あらゆる種類のデータ**のパッケージ化に利用できる。
+
+パッケージに含まれるデータは、以下のように提供できる。
+
+- パッケージのディスクリプタとともにローカルにバンドルされたファイル
+- URL で参照されるリモートリソース
+- ディスクリプタに直接含まれる「インライン」データ(後述)
+
+## 構造 {#structure}
+
+ディスク上の最小限のデータパッケージは、単一のファイルを含むディレクトリである。
+
+```text
+datapackage.json  # (required) metadata and schemas for this data package
+```
+
+外部のデータソースが一切ないと用途は限られる。これよりもう少しだけ充実したものは以下のようになる。
+
+```text
+datapackage.json
+# a data file (CSV in this case)
+data.csv
+```
+
+README、スクリプト(データの処理や分析のためのもの)、その他の資料といった追加ファイルを提供してもよい。慣例としてスクリプトは scripts ディレクトリに置かれるため、より凝ったデータパッケージは以下のようになる。
+
+```text
+datapackage.json  # (required) metadata and schemas for this data package
+README.md         # (optional) README in markdown format
+
+# data files may go either in data subdirectory or in main directory
+mydata.csv
+data/otherdata.csv
+
+# the directory for code scripts - again these can go in the base directory
+scripts/my-preparation-script.py
+```
+
+データパッケージの例は [github 上の datasets organization](https://github.com/datasets) にいくつか見つけることができ、次のものが含まれる。
+
+- [World GDP](https://github.com/datasets/gdp)
+- [ISO 3166-2 country codes](https://github.com/datasets/country-codes)
+
+## ディスクリプタ {#descriptor}
+
+データパッケージのディスクリプタは、[Descriptor](/standard/glossary/#descriptor) の定義に従ったディスクリプタでなければならない (`MUST`)。ディスクリプタに含めることのできる標準プロパティの一覧は、[Properties](#properties) のセクションで定義されている。
+
+データパッケージがファイルを含む物理的または仮想的なディレクトリとして利用可能な場合、ディスクリプタは `datapackage.json` という名前でなければならず (`MUST`)、ファイル構造の最上位(データパッケージの一部として提供される他のあらゆるリソースを基準として)に置かれなければならない (`MUST`)。
+
+ディスクリプタはデータパッケージの中心となるファイルである。これは以下を提供する。
+
+- パッケージのタイトル、ライセンス、発行者などの一般的なメタデータ
+- パッケージを構成するデータ「リソース」の一覧。これには、ディスク上やオンライン上の位置、その他の関連情報(場合によっては、これらのデータリソースに関する構造化されたスキーマ情報を含む)が含まれる
+
+データパッケージのディスクリプタの例:
+
+```json
+{
+  "name" : "a-unique-human-readable-and-url-usable-identifier",
+  "title" : "A nice title",
+  "licenses" : [ ... ],
+  "sources" : [ ... ],
+  "resources": [
+    {
+      ...
+    }
+  ]
+}
+```
+
+:::note[ファイル名]
+データパッケージのディスクリプタを含むファイルは、対応する実装がサポートしていれば、何らかのプロジェクトやシステムの内部的な構成要素として `datapackage.json` 以外の名前を持ってもよい (`MAY`)。ディスクリプタは、`datapackage.json` 以外の名前で外部に公開されるべきでない (`SHOULD NOT`)。
+:::
+
+## プロパティ {#properties}
+
+データパッケージのディスクリプタは [`resources`](#resources) プロパティを持たなければならず (`MUST`)、[`name`](#name)、[`id`](#id)、[`licenses`](#licenses)、`profile` の各プロパティを持つべきである (`SHOULD`)。
+
+### `resources` [必須] {#resources}
+
+`resources` プロパティは必須 (`REQUIRED`) であり、少なくとも 1 つのリソースを持つ。
+
+パッケージ化されたデータリソースは、パッケージディスクリプタの `resources` プロパティに記述される。このプロパティは `objects` の配列でなければならない (`MUST`)。各オブジェクトは [Data Resource ](/standard/data-resource/) の仕様に従わなければならない (`MUST`)。
+
+### `$schema` {#dollar-schema}
+
+ルートレベルのデータパッケージのディスクリプタは `$schema` プロパティを持ってもよく (`MAY`)、これは [Profile](/standard/glossary/#profile) の定義に従ったプロファイルでなければならず (`MUST`)、本仕様が要求するすべてのメタデータ制約を含まなければならない (`MUST`)。
+
+デフォルト値は `https://datapackage.org/profiles/1.0/datapackage.json` であり、推奨値は `https://datapackage.org/profiles/2.0/datapackage.json` である。
+
+:::note[後方互換性]
+`$schema` プロパティが提供されていないものの、ディスクリプタが `profile` プロパティを持つ場合、データの利用者は [Profiles](https://specs.frictionlessdata.io/profiles/) の仕様に従ってディスクリプタを検証しなければならない (`MUST`)。
+:::
+
+### `name`
+
+name は、このパッケージが登録されるあらゆるレジストリとの関係において、このパッケージに用いられるシンプルな名前または識別子である。
+
+- 人間が読める形式であり、英小文字の英数字に加えて `.`、`-`、`_` のみで構成されるべきである (`SHOULD`)。
+- このパッケージが登録されるあらゆるレジストリとの関係において一意であるべきである(できればグローバルに一意であることが望ましい) (`SHOULD`)。
+- 不変であるべきである (`SHOULD`)。すなわち、データパッケージが更新されても変更されるべきでない (`SHOULD NOT`)。ただし、構造や解釈の大幅な変更などにより、新しいパッケージのバージョンが別個のパッケージとみなされるべき (`SHOULD`) 場合を除く。バージョンの区別は version プロパティに委ねられるべきである (`SHOULD`)。その帰結として、name は対象とする期間の範囲を示すものを含むべきでもない (`SHOULD NOT`)。
+
+### `id`
+
+グローバルに一意な識別子のために予約されたプロパティ。一意な識別子の例には UUID や DOI がある。
+
+データパッケージの一般的な利用パターンは、あるシステムやプラットフォームの範囲内でのパッケージングフォーマットとしての利用である。このような場合、既存のパッケージの更新といった一般的なデータ処理ワークフローのために、パッケージの一意な識別子が求められる。仕様のレベルではグローバルな一意性を検証できないものの、`id` プロパティを使用する利用者は、識別子がグローバルに一意であることを保証しなければならない (`MUST`)。
+
+例:
+
+```json
+{
+  "id": "b03ec84-77fd-4270-813b-0c698943f7ce"
+}
+```
+
+```json
+{
+  "id": "https://doi.org/10.1594/PANGAEA.726855"
+}
+```
+
+### `licenses`
+
+パッケージが提供されるライセンス。
+
+:::caution
+このプロパティは法的拘束力を持たず、パッケージがこのプロパティで定義された条件のもとでライセンスされていることを保証するものではない。
+:::
+
+`licenses` は配列でなければならない (`MUST`)。配列の各項目は License である。各項目は `object` でなければならない (`MUST`)。オブジェクトは `name` プロパティおよび/または `path` プロパティを含まなければならず (`MUST`)、`title` プロパティを含んでもよい (`MAY`)。
+
+- `name`: [Open Definition のライセンス ID](http://licenses.opendefinition.org/) を含む文字列。
+- `path`: 完全修飾された HTTP アドレスまたは相対 POSIX パスである [URL または Path](/standard/glossary/#url-or-path)。
+- `title`: 人間が読めるタイトルを含む文字列。
+
+`licenses` プロパティの使用例:
+
+```json
+"licenses": [{
+  "name": "ODC-PDDL-1.0",
+  "path": "http://opendatacommons.org/licenses/pddl/",
+  "title": "Open Data Commons Public Domain Dedication and License v1.0"
+}]
+```
+
+### `title`
+
+このパッケージのタイトルまたは一文の説明を提供する `string`。
+
+### `description`
+
+[CommonMark Markdown](https://spec.commonmark.org/current/) 構文によるパッケージの説明。任意の文字列が有効な CommonMark ドキュメントであるため、これは単純なプレーンテキストも許容する。パッケージの概要情報として利用できるよう、最初の段落は後続の内容から空行で区切られるべきである (`SHOULD`)。
+
+### `homepage`
+
+このデータパッケージに関連する、ウェブ上のホームを指す URL。
+
+### `image`
+
+このデータパッケージに使用する画像。例えば、一覧でパッケージを表示する際に使用する。
+
+image プロパティの値は、画像の位置を指す文字列でなければならない (`MUST`)。この文字列は、完全修飾された HTTP アドレスまたは相対 POSIX パスである [URL または Path](/standard/glossary/#url-or-path) でなければならない (`MUST`)。
+
+### `version`
+
+パッケージのバージョンを識別するバージョン文字列。[Semantic Versioning](http://semver.org) の要件に準拠すべきであり (`SHOULD`)、[Data Package Version](/recipes/data-package-version) のレシピに従うべきである (`SHOULD`)。
+
+### `created`
+
+これが作成された日時。
+
+注: 意味は発行者によって異なる場合がある。ある発行者にとってはデータが作成された日時であり、別の発行者にとってはパッケージが作成された日時である。
+
+この日時は、[RFC3339](https://tools.ietf.org/html/rfc3339#section-5.6) に記述された datetime の文字列フォーマットに準拠しなければならない (`MUST`)。例:
+
+```json
+{
+  "created": "1985-04-12T23:20:50.52Z"
+}
+```
+
+### `keywords`
+
+カタログ内でパッケージを検索するユーザーを支援するための、文字列キーワードの配列。
+
+### `contributors`
+
+このデータパッケージに貢献した個人または組織。これは配列でなければならない (`MUST`)。各エントリは Contributor であり、`object` でなければならない (`MUST`)。Contributor は少なくとも 1 つのプロパティを持たなければならない (`MUST`)。Contributor は `title` プロパティを持つことが推奨され (`RECOMMENDED`)、`givenName`、`familyName`、`path`、`email`、`roles`、`organization` の各プロパティを含んでもよい (`MAY`)。
+
+- `title`: 貢献者の名前を含む文字列。
+- `givenName`: 貢献者が個人の場合、その人に与えられた名(given name)を含む文字列。
+- `familyName`: 貢献者が個人の場合、その人が受け継ぐ姓(familial name)を含む文字列。
+- `path`: 貢献者に関連するオンライン上の場所を指す完全修飾 URL。
+- `email`: メールアドレスを含む文字列。
+- `roles`: 貢献者の役割を記述する文字列の配列。役割は、[DataCite Metadata Schema の contributorRole](https://support.datacite.org/docs/datacite-metadata-schema-v44-recommended-and-optional-properties#7a-contributortype) や [CRediT](https://credit.niso.org/) などの確立された語彙に従うことが推奨される (`RECOMMENDED`)。示すと有用な役割は次のものである: `creator`、`contact`、`rightsHolder`、`dataCurator`。
+- `organization`: この貢献者が所属する組織を記述する文字列。
+
+オブジェクト構造の例は以下のとおりである。
+
+```json
+"contributors": [{
+  "title": "Joe Bloggs",
+  "email": "joe@bloggs.com",
+  "path": "http://www.bloggs.com",
+  "roles": ["creator"]
+}]
+```
+
+`creator` という役割の使用は、その人がデータパッケージ内のデータの本来の作成者であることを意味するものではなく、単にその人がデータパッケージを作成したか、および/または保守していることを意味するにすぎない。データパッケージが他所のデータを「パッケージ化」することはよくある。データの本来の出所は `sources` プロパティで示すことができる(前述参照)。
+
+参考文献:
+
+- [Citation Style Language](https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html#name-fields)
+
+:::note[後方互換性]
+`roles` プロパティが提供されていない場合、データの利用者は、本仕様の `v1.0` の一部であった `role` プロパティを使用することにフォールバックしなければならない (MUST)。このプロパティは同じ意味を持つが、単一の役割のみを指定できる文字列である。
+:::
+
+### `sources`
+
+このデータパッケージの元となる生のソース。これは Source オブジェクトの配列でなければならない (`MUST`)。Source オブジェクトは少なくとも 1 つのプロパティを持たなければならない (`MUST`)。Source オブジェクトは `title` プロパティを持つことが推奨され (`RECOMMENDED`)、`path`、`email`、`version` の各プロパティを持ってもよい (`MAY`)。
+
+- `title`: ソースのタイトル(例: ドキュメント名や組織名)を含む文字列。
+- `path`: 完全修飾された HTTP アドレスまたは相対 POSIX パスである [URL または Path](/standard/glossary/#url-or-path)。
+- `email`: メールアドレスを含む文字列。
+- `version`: ソースのバージョンを含む文字列。
+
+オブジェクト構造の例は以下のとおりである。
+
+```json
+"sources": [{
+  "title": "World Bank and OECD",
+  "path": "http://data.worldbank.org/indicator/NY.GDP.MKTP.CD"
+}]
+```
+
+## 関連する取り組み {#related-work}
+
+データパッケージは、特に以下の仕様や実装などから内容や着想を得ている。
+
+- [DataCite](https://schema.datacite.org/)
+- [Zenodo](https://zenodo.org/)
+- [DCAT](https://www.w3.org/TR/vocab-dcat-3/)
+- [CKAN](https://ckan.org/)
+- [OAI-ORE](https://www.openarchives.org/ore/)
+- [DataONE](https://dataone-architecture-documentation.readthedocs.io/en/latest/design/DataPackage.html)
+- [Research Object Bundle](https://www.researchobject.org/specifications/bundle/)

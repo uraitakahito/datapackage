@@ -1,0 +1,987 @@
+---
+title: テーブルスキーマ
+description: 表形式データのスキーマを宣言するためのシンプルなフォーマット。このスキーマは JSON で表現できるように設計されている。
+sidebar:
+  order: 4
+profile: /profiles/2.0/tableschema.json
+authors:
+  - Rufus Pollock
+  - Paul Walsh
+  - Adam Kariv
+  - Evgeny Karev
+  - Peter Desmet
+  - Ethan Welty
+  - DC Slagel
+  - Kyle Husmann
+  - Data Package Working Group
+---
+
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳である。
+> 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照のこと。
+
+<table>
+  <tr>
+    <th>Authors</th>
+    <td>{frontmatter.authors.join(", ")}</td>
+  </tr>
+  <tr>
+    <th>Profile</th>
+    <td>
+      <a href={frontmatter.profile}>{frontmatter.profile}</a>
+    </td>
+  </tr>
+</table>
+
+<p>{frontmatter.description}</p>
+
+## 言語 {#language}
+
+本書におけるキーワード `MUST`、`MUST NOT`、`REQUIRED`、`SHALL`、`SHALL NOT`、`SHOULD`、`SHOULD NOT`、`RECOMMENDED`、`MAY`、`OPTIONAL` は、[RFC 2119](https://www.ietf.org/rfc/rfc2119.txt) に記載されているとおりに解釈されるものとする。
+
+## はじめに {#introduction}
+
+テーブルスキーマは、表形式データのスキーマを宣言するための、シンプルで言語・実装に依存しない方法である。テーブルスキーマは、CSV のようなテキスト形式の表形式データを扱い検証するユースケースに適しているが、その有用性はこの中核的な用途をはるかに超え、データが可搬性のあるスキーマフォーマットから恩恵を受けるさまざまなアプリケーションにまで及ぶ。
+
+本仕様は以下の概念に大きく依存している。
+
+- [Tabular Data](/standard/glossary/#tabular-data)
+- [Data Representation](/standard/glossary/#data-representation)
+
+## ディスクリプタ {#descriptor}
+
+テーブルスキーマのディスクリプタ(descriptor)は、[Descriptor](/standard/glossary/#descriptor) の定義に従ったディスクリプタでなければならない (`MUST`)。ディスクリプタに含めることができる標準プロパティの一覧は、[Properties](#properties) セクションで定義されている。
+
+テーブルスキーマのディスクリプタの例:
+
+```json
+{
+  "fields": [
+    {
+      "name": "name of field (e.g. column name)",
+      "title": "A nicer human readable label or title for the field",
+      "type": "A string specifying the type",
+      "format": "A string specifying a format",
+      "example": "An example value for the field",
+      "description": "A description for the field"
+      ...
+    },
+    ...
+  ],
+  "missingValues": [ ... ],
+  "primaryKey": [ ... ],
+  "foreignKeys": [... ]
+}
+```
+
+## プロパティ {#properties}
+
+### スキーマ {#schema}
+
+テーブルスキーマのディスクリプタは、以下の標準プロパティを含んでもよい (`MAY`)。
+
+#### `fields` [required] {#fields}
+
+テーブルスキーマのディスクリプタは、`fields` プロパティを含まなければならない (`MUST`)。`fields` は配列でなければならず (`MUST`)、配列の各要素は以下で定義する[フィールドディスクリプタ](#field)である。
+
+テーブルスキーマの `fields` がデータソースのフィールドにどのようにマッピングされるかは、`fieldsMatch` プロパティによって定義される。デフォルトでは、最も厳格なアプローチが適用される。すなわち、データソース内のフィールドは、数と順序の両方において `fields` 配列の要素と完全に一致しなければならない (`MUST`)。`fieldsMatch` プロパティのさまざまなオプションを使用することで、データ生産者はデータソースに対する要件を緩和できる。
+
+#### `$schema` {#dollar-schema}
+
+ルートレベルのテーブルスキーマのディスクリプタは、`$schema` プロパティを持ってもよい (`MAY`)。これは [Profile](/standard/glossary/#profile) の定義に従ったプロファイルでなければならず (`MUST`)、本仕様が要求するすべてのメタデータ制約を含まなければならない (`MUST`)。
+
+デフォルト値は `https://datapackage.org/profiles/1.0/tableschema.json` であり、推奨値は `https://datapackage.org/profiles/2.0/tableschema.json` である。
+
+#### `fieldsMatch` {#fieldsMatch}
+
+テーブルスキーマのディスクリプタは、`fieldsMatch` プロパティを含んでもよい (`MAY`)。これは以下の値を取りうる文字列でなければならず (`MUST`)、デフォルト値は `exact` である。
+
+- **exact**(デフォルト): データソースは `fields` 配列で定義されたものと完全に同じフィールドを持たなければならない (`MUST`)。フィールドはその順序によってマッピングされなければならない (`MUST`)。
+- **equal**: データソースは `fields` 配列で定義されたものと完全に同じフィールドを持たなければならない (`MUST`)。フィールドはその名前によってマッピングされなければならない (`MUST`)。
+- **subset**: データソースは `fields` 配列で定義されたすべてのフィールドを持たなければならない (`MUST`) が、それより多くのフィールドを持ってもよい (`MAY`)。フィールドはその名前によってマッピングされなければならない (`MUST`)。
+- **superset**: データソースは `fields` 配列で定義されたフィールドのみを持たなければならない (`MUST`) が、それより少ないフィールドを持ってもよい (`MAY`)。フィールドはその名前によってマッピングされなければならない (`MUST`)。
+- **partial**: データソースは `fields` 配列で定義されたフィールドを少なくとも 1 つ持たなければならない (`MUST`)。フィールドはその名前によってマッピングされなければならない (`MUST`)。
+
+#### `missingValues` {#missingValues}
+
+多くのデータセットは、値が収集されなかった、あるいはそもそも存在しなかったといった理由で、欠損したデータ値を含んだ状態で届く。欠損値は、単に値が空であることによって示される場合もあれば、`-`、`NaN`、`0`、`-9999` などの特別な値が用いられている場合もある。
+
+`missingValues` は、どの値が欠損値として扱われるべきか (`SHOULD`) を規定する。欠損値の表現に対する実装のサポートに応じて、実装はフィールドの読み込み時に欠損性を扱うさまざまな方法を提供してもよい (`MAY`)。これには、すべての欠損値を `null` に変換する、欠損値をフィールドの論理値とインラインで読み込む、あるいはフィールドの欠損値を別の追加の列に読み込むなどが含まれるが、これらに限定されない。
+
+`missingValues` は、各要素が一意な `string` である `array`、または各要素が `object` である `array` でなければならない (`MUST`)。
+
+`object` の `array` が提供される場合、各オブジェクトは一意な `value` プロパティと、任意の一意な `label` プロパティを持たなければならない (`MUST`)。`value` プロパティは欠損値を表す `string` でなければならない (`MUST`)。任意の `label` プロパティは、その欠損値に対する人間が読めるラベルを提供する `string` でなければならない (`MUST`)。例:
+
+```json
+"missingValues": [
+  { "value": "", "label": "OMITTED" },
+  { "value": "-99", "label": "REFUSED" }
+]
+```
+
+**なぜ文字列なのか**: `missingValues` は、特定のフィールドのデータ型ではなく文字列である。これにより、キャスト前の比較が可能になり、またフィールドが自身の型ではない欠損値を持つこと、例えば `number` フィールドが `-` で示される欠損値を持つことが可能になる。
+
+例:
+
+```text
+"missingValues": [""]
+"missingValues": ["-"]
+"missingValues": ["NaN", "-"]
+```
+
+実装が欠損値を null に変換することを選択する場合、この `null` への変換は、その他の型固有の文字列変換が試みられる前に行われなければならない (`MUST`)。デフォルト値 `[ "" ]` は、空文字列が他のいかなる処理が行われる前にも null に変換されることを意味する。空のリスト `[]` を提供することは、いかなる値に対しても null への変換が行われないことを意味する。
+
+#### `primaryKey` {#primaryKey}
+
+主キーは、テーブル内の各行を一意に識別するフィールドまたはフィールドの集合である。SQL 標準に従い、これらのフィールドは `null` にできないため、主キーでの使用は、それらの [`constraints`](#constraints) に `required: true` を追加することと等価である。
+
+スキーマ `object` 内の `primaryKey` エントリは任意である。存在する場合は、このテーブルの主キーを指定する。
+
+`primaryKey` は、存在する場合、文字列の配列でなければならず (`MUST`)、各文字列は `fields` 配列内のフィールド `name` 値のいずれかに対応する(主キーがそれらのフィールドで構成されることを示す)。単一の値を持つ配列(主キーにフィールドが 1 つだけであることを示す)も許容される。厳密には、配列内の値の順序は問題にならない。しかし、クライアントアプリケーションが主キーリストの順序を利用する場合がある (`MAY`)(例えば値を連結する場合など)ため、`fields` がフィールドを持つ順序に従うことが推奨される (`RECOMMENDED`)。
+
+以下に例を示す:
+
+```json
+"schema": {
+  "fields": [
+    {
+      "name": "a"
+    },
+    {
+      "name": "b"
+    },
+    {
+      "name": "c"
+    },
+    ...
+  ],
+  "primaryKey": ["a", "c"]
+}
+```
+
+:::note[後方互換性]
+データコンシューマーは、`v1.0` の仕様の一部であった、単一の文字列の形式(例 `primaryKey: a`)の `primaryKey` プロパティをサポートしなければならない (MUST)。
+:::
+
+#### `uniqueKeys` {#uniqueKeys}
+
+一意キーは、テーブル内の各行において一意な論理値を持つことが要求されるフィールドまたはフィールドの集合である。これは SQL における一意制約の概念を直接モデル化したものである。
+
+`uniqueKeys` プロパティは、存在する場合、空でない配列でなければならない (`MUST`)。配列の各要素は `uniqueKey` でなければならない (`MUST`)。`uniqueKey` は文字列の配列でなければならず (`MUST`)、各文字列は `fields` 配列内のフィールド `name` 値のいずれかに対応し、一意キーがそれらのフィールドで構成されることを示す。単一の値を持つ配列(一意キーにフィールドが 1 つだけであることを示す)も許容される。
+
+`uniqueKeys` プロパティの使用例:
+
+```json
+"fields": [
+  {
+    "name": "a"
+  },
+  {
+    "name": "b"
+  },
+  {
+    "name": "c"
+  }
+],
+"uniqueKeys": [
+  ["a"],
+  ["a", "b"],
+  ["a", "c"]
+]
+```
+
+上記の定義の場合、テーブル内のデータは以下の場合にのみ有効とみなされなければならない。
+
+- 各行がフィールド `a` において一意な論理値を持つ
+- 各行がフィールド `a` と `b` において一意な論理値の組を持つ
+- 各行がフィールド `a` と `c` において一意な論理値の組を持つ
+
+**`null` 値の扱い**
+
+論理レベルで `null` 値とみなされるすべてのフィールド値は、一意性チェックから除外されなければならない (`MUST`)。これは `uniqueKeys` プロパティが SQL における一意制約の概念をモデル化したものだからである。
+
+**`constraints.unique` との関係**
+
+`field.constraints.unique` とは対照的に、`uniqueKeys` はフィールドの組み合わせとして一意性を定義できる。両方のプロパティは別々に評価されるべきである (`SHOULD`)。
+
+#### `foreignKeys` {#foreignKeys}
+
+外部キーは、このテーブルスキーマによって記述されるテーブル(データパッケージの用語では「リソース」)上のフィールド(または複数のフィールド)の値が、このテーブルまたは別のテーブル(リソース)上のフィールド(または複数のフィールド)の値に接続する参照である。これらは SQL における外部キーの概念を直接モデル化したものである。
+
+`foreignKeys` プロパティは、存在する場合、配列でなければならない (`MUST`)。配列の各要素は `foreignKey` でなければならない (`MUST`)。`foreignKey` は `object` でなければならず (`MUST`)、以下のプロパティを持たなければならない (`MUST`)。
+
+- `fields` - `fields` は、このリソース上で外部キーのソース部分を構成するフィールドまたは複数のフィールドを指定する文字列の配列である。配列の構造は上記の `primaryKey` と同様である。
+- `reference` - `reference` は `object` でなければならない (`MUST`)。この `object` は、
+  - 外側の `fields` と同じ長さの文字列の配列である `fields` プロパティを持たなければならない (`MUST`)。これは参照先リソース上で参照されるフィールド(または複数のフィールド)を記述する。配列の構造は上記の `primaryKey` と同様である。
+  - 現在のデータパッケージ、すなわちこのテーブルスキーマが置かれているデータパッケージ内のリソースの名前である `resource` プロパティを持ってもよい (`MAY`)。別のデータリソースを参照する場合、`resource` プロパティが提供されなければならない (`MUST`)。自己参照、すなわちこのテーブルスキーマ内のフィールド間の参照の場合、`resource` プロパティは省略されなければならない (`MUST`)。
+
+以下に例を示す:
+
+```json
+"resources": [
+  {
+    "name": "state-codes",
+    "schema": {
+      "fields": [
+        {"name": "code"}
+      ]
+    }
+  },
+  {
+    "name": "population-by-state",
+    "schema": {
+      "fields": [
+        {"name": "state-code"}
+      ],
+      "foreignKeys": [
+        {
+          "fields": ["state-code"],
+          "reference": {
+            "resource": "state-codes",
+            "fields": ["code"]
+          }
+        }
+      ]
+    }
+  }
+]
+```
+
+自己参照する外部キーの例:
+
+```json
+"resources": [
+  {
+    "name": "xxx",
+    "schema": {
+      "fields": [
+        {"name": "parent"},
+        {"name": "id"}
+      ],
+      "foreignKeys": [
+        {
+          "fields": ["parent"],
+          "reference": {
+            "fields": ["id"]
+          }
+        }
+      ]
+    }
+  }
+]
+```
+
+外部キーは、あるテーブルスキーマと別のテーブルスキーマとの間にリンクを作成し、暗黙的にそれらのテーブルスキーマによって記述されるデータテーブル間にもリンクを作成する。外部キーが別のテーブルスキーマを参照している場合、その別のテーブルスキーマはどのように発見されるのだろうか。その答えは、テーブルスキーマは通常、データセットのためのより大きなディスクリプタの内部、特に [Data Package](http://specs.frictionlessdata.io/data-package/) の resources 配列内のリソースのスキーマとして埋め込まれる、ということである。このようにテーブルスキーマを使用することが、外部キー上での空でない `resource` プロパティの意味ある使用を可能にする。
+
+:::note[後方互換性]
+`foreignKey.reference.resource` プロパティの値が空文字列 `""` である場合、自己参照のための空文字列が `v1.0` の仕様の一部であったため、データコンシューマーはこれを省略されたプロパティとして解釈しなければならない (MUST)。
+:::
+
+:::note[後方互換性]
+データコンシューマーは、`v1.0` の仕様の一部であった、単一の文字列の形式(例 `"fields": "a"`)の `foreignKey.fields` および `foreignKey.reference.fields` プロパティをサポートしなければならない (MUST)。
+:::
+
+### フィールド {#field}
+
+フィールドディスクリプタは、単一のフィールドを記述する JSON `object` でなければならない (`MUST`)。このディスクリプタは、フィールドに対する人間が読める追加のドキュメントを提供するとともに、フィールドの検証やデータ入力用のユーザーインターフェースの作成に使用できる追加情報を提供する。
+
+以下に図示する:
+
+```json
+{
+  "name": "name of field (e.g. column name)",
+  "title": "A nicer human readable label or title for the field",
+  "type": "A string specifying the type",
+  "format": "A string specifying a format",
+  "example": "An example value for the field",
+  "description": "A description for the field",
+  "constraints": {
+      ...
+  }
+}
+```
+
+フィールドディスクリプタ `object` は、任意の数の他のプロパティを含んでもよい (`MAY`)。いくつかの特定のプロパティは以下で定義する。これらのうち、`name` プロパティのみが必須 (`REQUIRED`) である。
+
+#### `name` [required] {#name}
+
+フィールドディスクリプタは `name` プロパティを含まなければならず (`MUST`)、それはこのテーブルスキーマ内の他のフィールド名の中で一意でなければならない (`MUST`)。このプロパティは、データファイルが名前を持つ場合、その列の名前に対応すべきである (`SHOULD`)。
+
+:::note[後方互換性]
+テーブルスキーマ内で `name` プロパティが一意でない場合でも、`v1.0` の仕様では重複する `name` プロパティが許可されていたため、データコンシューマーはこれを無効なディスクリプタとして解釈してはならない (`MUST NOT`)。
+:::
+
+#### `type` と `format` {#type-and-format}
+
+これらのプロパティは、フィールドの型(string、number など)を与えるために使用される。詳細は以下を参照のこと。型が提供されない場合、コンシューマーはフィールドの値から推論するのではなく、そのフィールドに対して `any` 型を使用しなければならない (`MUST`)。
+
+フィールドの `type` プロパティは、このフィールドの型を示す文字列である。
+
+フィールドの `format` プロパティは、フィールド型のフォーマットを示す文字列である。
+
+`type` と `format` はいずれも任意である。フィールドディスクリプタにおいて、`type` プロパティの欠如はそのフィールドが "any" 型であることを示し、`format` プロパティの欠如はそのフィールドの型の `format` が "default" であることを示す。
+
+型は、いくつかの追加と軽微な変更を加えた [json-schema の型セット](http://tools.ietf.org/html/draft-zyp-json-schema-03#section-5.1) に基づいている(他の型リストとしては [Elasticsearch の型](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html) などがあるので参照のこと)。
+
+:::note[後方互換性]
+`format` プロパティが `fmt:` プレフィックスで始まる場合、これはデータパッケージ標準(v0)で時間的なフォーマットを提供する方法であったため、実装はそのプレフィックスを除去しなければならない (`MUST`)。
+:::
+
+#### `title`
+
+フィールドに対する人間が読めるラベルまたはタイトル。
+
+#### `description`
+
+このフィールドに対する説明。例 "The recipient of the funds"。
+
+#### `example`
+
+フィールドの値の例。
+
+#### `constraints`
+
+[Field Constraints](#field-constraints) を参照のこと。
+
+#### `categories`
+
+`string` および `integer` のフィールド型は、フィールドを有限の取りうる値の集合に制限し([`enum`](#enum) 制約と同様)、実装がサポートする場合にはそのフィールドがカテゴリカルデータ型として読み込まれてもよい (`MAY`) ことを示すために、`categories` プロパティを含んでもよい (`MAY`)。`categories` プロパティは、(a) 一意な値の配列、または (b) それぞれが一意な `value` プロパティを持つオブジェクトの配列のいずれかでなければならない (`MUST`)。フィールド内のデータの論理表現は、`categories` 内の値のいずれか 1 つに正確に一致しなければならない (`MUST`)。
+
+取りうる値が `"apple"`、`"orange"`、`"banana"` であるフィールド `fruit` があるとする。`categories` が (a) 値の配列である場合、フィールド定義は以下のようになる:
+
+```json
+{
+  "name": "fruit",
+  "type": "string",
+  "categories": ["apple", "orange", "banana"]
+}
+```
+
+`categories` が (b) オブジェクトの配列である場合、各オブジェクトは `label` プロパティを持ってもよく (`MAY`)、存在する場合はそれは `string` でなければならない (`MUST`)。ラベルは `categories` 定義内で一意でなければならない (`MUST`)。この例では、これにより `integer` フィールドに値 `0`、`1`、`2` で果物を格納し、それらに `"apple"`、`"orange"`、`"banana"` というラベルを付けることができる:
+
+```json
+{
+  "name": "fruit",
+  "type": "integer",
+  "categories": [
+    { "value": 0, "label": "apple" },
+    { "value": 1, "label": "orange" },
+    { "value": 2, "label": "banana" }
+  ]
+}
+```
+
+`categories` プロパティを持つフィールドに `enum` 制約を追加してもよい (`MAY`) が、その場合、`enum` の値は `categories` 内の値の部分集合でなければならない (`MUST`)。
+
+#### `categoriesOrdered` {#categoriesOrdered}
+
+`categories` プロパティが定義されている場合、フィールド定義においてそれに `categoriesOrdered` プロパティを伴ってもよい (`MAY`)。存在する場合、`categoriesOrdered` プロパティは `boolean` でなければならない (`MUST`)。`categoriesOrdered` が `true` の場合、実装は `categories` プロパティ内の値の出現順序をそれらの自然な順序とみなすべきである (`SHOULD`)。例:
+
+```json
+{
+  "name": "agreementLevel",
+  "type": "integer",
+  "categories": [
+    { "value": 1, "label": "Strongly Disagree" },
+    { "value": 2 },
+    { "value": 3 },
+    { "value": 4 },
+    { "value": 5, "label": "Strongly Agree" }
+  ],
+  "categoriesOrdered": true
+}
+```
+
+プロパティ `categoriesOrdered` が `false` の場合、実装はカテゴリが自然な順序を持たないと仮定すべきである (`SHOULD`)。プロパティが存在しない場合、値の順序付けの性質について何ら仮定すべきではない (`SHOULD`)。
+
+#### `missingValues` {#field-missingValues}
+
+[Missing Values](#missingValues) の定義に従った、このフィールドの欠損値のリスト。このプロパティが定義されている場合、スキーマレベルのプロパティに優先し、値を結合することなくそのフィールドについて完全に置き換える。
+
+例えば、以下のテーブルスキーマの場合:
+
+```json
+"fields": [
+  {
+    "name": "column1"
+  },
+  {
+    "name": "column2",
+    "missingValues": ["-"]
+  }
+],
+"missingValues": ["", "NA"]
+```
+
+データコンシューマーは以下を行わなければならない (`MUST`)。
+
+- `column1` については `""` と `NA` を欠損値として解釈する
+- `column2` については `-` のみを欠損値として解釈する
+
+#### `rdfType` {#rdfType}
+
+ある列のデータの「型」についてのより豊かな「セマンティックな」記述は、フィールドディスクリプタ上の `rdfType` プロパティを用いて提供してもよい (`MAY`)。
+
+`rdfType` プロパティの値は、[RDF Schema Class オブジェクト](https://www.w3.org/TR/rdf-schema/#ch_class)のインスタンスまたはサブクラスである RDF クラスの URI でなければならない (`MUST`)。
+
+以下は Schema.org の RDF クラス `http://schema.org/Country` を用いた例である:
+
+```text
+| Country | Year Date | Value |
+| ------- | --------- | ----- |
+| US      | 2010      | ...   |
+```
+
+対応するテーブルスキーマは以下のとおりである:
+
+```json
+{
+  "fields": [
+    {
+      "name": "Country",
+      "type": "string",
+      "rdfType": "http://schema.org/Country"
+    }
+    ...
+  ]
+}
+```
+
+## フィールド型 {#field-types}
+
+関連するフォーマットおよびその他の関連プロパティを含む型の一覧は以下のとおりである。
+
+### `string`
+
+フィールドは文字列、すなわち文字の並びを含む。
+
+サポートされるフォーマット:
+
+- **default**: 任意の有効な文字列。
+- **email**: 有効なメールアドレス。
+- **uri**: 有効な URI。
+- **binary**: バイナリデータを表す base64 エンコードされた文字列。
+- **uuid**: uuid である文字列。
+
+### `number`
+
+フィールドは小数を含むあらゆる種類の数値を含む。
+
+字句的なフォーマットは [XMLSchema](https://www.w3.org/TR/xmlschema-2/#decimal) における decimal のものに従う。すなわち、小数点を示す記号としてのピリオドで区切られた、空でない有限長の 10 進数字の並びである。任意で先頭に符号を付けることが許される。符号が省略された場合は "+" が仮定される。先頭および末尾のゼロは任意である。小数部がゼロの場合、ピリオドとそれに続くゼロは省略できる。例: '-1.23'、'12678967.543233'、'+100000.00'、'210'。
+
+以下の特別な文字列値が許可される(大文字小文字は区別しなくてよい)。
+
+- NaN: 非数 (not a number)
+- INF: 正の無限大
+- -INF: 負の無限大
+
+数値は末尾に以下を持ってもよい (`MAY`)。
+
+- 指数 (exponent): これは E に続いて任意の + または - の符号、続いて 1 つ以上の 10 進数字 (0-9) で構成されなければならない (`MUST`)
+
+この字句的なフォーマットは、以下の追加プロパティを用いて変更してもよい (`MAY`)。
+
+- **decimalChar**: 数値内の小数点を表すために使用される値を持つ文字列。デフォルト値は "." である。
+- **groupChar**: 数値内の桁をグループ化するために使用される値を持つ文字列。このプロパティにはデフォルト値はない。一般的な値は "," である。例 "100,000"。
+- **bareNumber**: デフォルトが `true` の真偽値フィールド。`true` の場合、このフィールドの物理的な内容は、既に定められたフォーマット制約に従わなければならない (`MUST`)。`false` の場合、このフィールドの内容は先頭および/または末尾に非数値の文字を含んでもよい(したがって実装者はそれらを除去しなければならない (`MUST`))。`bareNumber` の目的は、パーセンテージのような末尾の文字(例 `95%`)や通貨のような先頭の文字(例 `€95` や `EUR 95`)を含む数値データを発行者が発行できるようにすることである。除去されたテキストをどう扱うか(あるいは何もしないか)は完全に実装者次第である点に注意すること。
+
+### `integer`
+
+フィールドは整数、すなわち整数値を含む。
+
+整数値は任意の有効な整数について標準的な方法で示される。
+
+この字句的なフォーマットは、以下の追加プロパティを用いて変更してもよい (`MAY`)。
+
+- **groupChar**: 整数内の桁をグループ化するために使用される値を持つ文字列。このプロパティにはデフォルト値はない。一般的な値は "," である。例 "100,000"。
+- **bareNumber**: デフォルトが `true` の真偽値フィールド。`true` の場合、このフィールドの物理的な内容は、既に定められたフォーマット制約に従わなければならない (`MUST`)。`false` の場合、このフィールドの内容は先頭および/または末尾に非数値の文字を含んでもよい(したがって実装者はそれらを除去しなければならない (`MUST`))。`bareNumber` の目的は、パーセンテージのような末尾の文字(例 `95%`)や通貨のような先頭の文字(例 `€95` や `EUR 95`)を含む数値データを発行者が発行できるようにすることである。除去されたテキストをどう扱うか(あるいは何もしないか)は完全に実装者次第である点に注意すること。
+
+### `boolean`
+
+フィールドは真偽値(true/false)データを含む。
+
+真偽値が文字列で表現されるデータの物理表現において、`trueValues` および `falseValues` に設定された値は、真偽値としての論理表現にキャストされる。`trueValues` と `falseValues` は配列であり、ユーザーの必要に応じてカスタマイズできる。これらのデフォルト値は、以下の追加プロパティのセクションにある。
+
+真偽値フィールドは、以下の追加プロパティでカスタマイズできる。
+
+- **trueValues**: `[ "true", "True", "TRUE", "1" ]`
+- **falseValues**: `[ "false", "False", "FALSE", "0" ]`
+
+### `object`
+
+フィールドは有効な JSON オブジェクトを含む。
+
+### `array`
+
+フィールドは有効な JSON 配列を含む。
+
+### `list`
+
+フィールドは、固定された要素型を持つ、順序付けされた一段階の深さのプリミティブ値のコレクションであるデータを含む。字句表現において、フィールドはデリミタで区切られた値を持つ文字列を含まなければならない (`MUST`)。デリミタはデフォルトでは `,`(カンマ)である。例 `value1,value2`。`array` 型と比較して、`list` 型は SQL の型付きコレクションの概念を直接モデル化したものである。
+
+`format`: オプションはない(デフォルト以外)。
+
+list フィールドは、以下の追加プロパティでカスタマイズできる。
+
+- **delimiter**: 字句的に表現されたリスト要素を区切る文字列を指定する。存在しない場合、デフォルトは `,`(カンマ)である。
+- **itemType**: 既存のテーブルスキーマの型に関してリスト要素の型を指定する。存在する場合、それは `string`、`integer`、`boolean`、`number`、`datetme`、`date`、`time` のいずれかでなければならない (`MUST`)。存在しない場合、デフォルトは `string` である。データコンシューマーは、リスト要素を対応するデータ型の個々の値であるかのように処理しなければならない (`MUST`)。字句レベルではデフォルトのフォーマットのみがサポートされる点に注意すること。例えば、`itemType` が `date` に設定されたリストの場合、要素は日付のデフォルト形式、すなわち `yyyy-mm-dd` でなければならない。
+
+### `datetime`
+
+フィールドは時刻を伴う日付を含む。
+
+サポートされるフォーマット:
+
+- **default**: 字句表現は、必須の日付部分と時刻部分、それに続く任意のミリ秒部分とタイムゾーン部分を含む、[XML Schema](https://www.w3.org/TR/xmlschema-2/#dateTime) で定義された形式でなければならない (`MUST`)。例 `2024-01-26T15:00:00` または `2024-01-26T15:00:00.300-05:00`。
+- **\<PATTERN\>**: このフィールドの値は `<PATTERN>` に従って解析できる。`<PATTERN>` は[標準的な Python / C の strptime](https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior) の構文に従わなければならない (`MUST`)。このフィールドの値は、`<PATTERN>` を用いた Python / C 標準の `strptime` によって解析可能であるべきである (`SHOULD`)。`"format": ""%d/%m/%Y %H:%M:%S"` の例は、`12/11/2018 09:15:32` のような時刻を伴う日付に対応する。
+- **any**: 値の任意の解析可能な表現。実装ライブラリは、さまざまな戦略を通じて datetime の解析を試みることができる。一例として `python-dateutils` ライブラリの `dateutil.parser.parse` がある。`any` フォーマットは相互運用性の問題を引き起こす可能性があるため、使用は推奨されない (`NOT RECOMMENDED`)。
+
+### `date`
+
+フィールドは時刻を伴わない日付を含む。
+
+サポートされるフォーマット:
+
+- **default**: 字句表現は `yyyy-mm-dd` でなければならない (`MUST`)。例 `2024-01-26`
+- **\<PATTERN\>**: `datetime` と同様。
+- **any**: `datetime` と同様。
+
+### `time`
+
+フィールドは日付を伴わない時刻を含む。
+
+サポートされるフォーマット:
+
+- **default**: 字句表現は `hh:mm:ss` でなければならない (`MUST`)。例 `15:00:00`
+- **\<PATTERN\>**: `datetime` と同様。
+- **any**: `datetime` と同様。
+
+### `year`
+
+[XMLSchema `gYear`](https://www.w3.org/TR/xmlschema-2/#gYear) に従った暦年。通常の字句表現は `YYYY` である。フォーマットオプションはない。
+
+### `yearmonth`
+
+[XMLSchema `gYearMonth`](https://www.w3.org/TR/xmlschema-2/#gYearMonth) に従った特定の年の特定の月。通常の字句表現は `YYYY-MM` である。フォーマットオプションはない。
+
+### `duration`
+
+時間の長さ。
+
+[XML Schema の duration データ型](http://www.w3.org/TR/xmlschema-2/#duration) の定義に直接従い、その定義は暗黙的にここにインライン化されている。
+
+要約すると、duration の字句表現は [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601#Durations) の拡張形式 PnYnMnDTnHnMnS である。ここで nY は年数、nM は月数、nD は日数を表し、'T' は日付/時刻の区切り記号、nH は時間数、nM は分数、nS は秒数を表す。秒数は任意の精度で小数を含むことができる。日付および時刻の要素は、その値がゼロの場合、その指示子も含めて省略してもよく (`MAY`)、また精度を下げるために下位の要素を省略してもよい (`MAY`)。
+
+### `geopoint`
+
+フィールドは地理的な点を記述するデータを含む。
+
+サポートされるフォーマット:
+
+- **default**: "lon, lat" というパターンの文字列。ここで各値は数値であり、`lon` は経度、`lat` は緯度である(`,` の後のスペースは任意である点に注意)。例 `"90.50, 45.50"`。
+- **array**: JSON 配列、または JSON 配列として解析可能な文字列。ちょうど 2 つの要素を持ち、各要素は数値で、最初の要素が `lon`、2 番目の要素が `lat` である。例 `[90.50, 45.50]`
+- **object**: ちょうど 2 つのキー `lat` と `lon` を持つ JSON オブジェクトで、各値は数値である。例 `{"lon": 90.50, "lat": 45.50}`
+
+### `geojson`
+
+フィールドは GeoJSON または TopoJSON 仕様に従った JSON オブジェクトを含む。
+
+サポートされるフォーマット:
+
+- **default**: [GeoJSON 仕様](http://geojson.org/) に従った geojson オブジェクト。
+- **topojson**: [TopoJSON 仕様](https://github.com/topojson/topojson-specification/blob/master/README.md) に従った topojson オブジェクト
+
+### `any`
+
+フィールドは未指定または混在した型の値を含む。データコンシューマーは、このフィールドの値に対していかなる処理も行ってはならず (`MUST NOT`)、データソースにあるとおりにそれらを解釈しなければならない (`MUST`)。このデータ型は、[TypeScript](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any) のような強く型付けされたオブジェクト指向言語の `any` 型の概念を直接モデル化したものである。
+
+例えば、以下のテーブルスキーマがあるとする:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "any" },
+    { "name": "name", "type": "any" }
+  ]
+}
+```
+
+この CSV データファイルは、以下のような論理値を持つ:
+
+```csv
+id,name
+1,apple
+2,orange
+```
+
+```javascript
+{id: "1", name: "apple"}
+{id: "2", name: "orange"}
+```
+
+一方、この JSON データファイルは、以下のような論理値を持つ:
+
+```json
+[
+  ["id", "name"]
+  [1, "apple"]
+  [2, "orange"]
+]
+```
+
+```javascript
+{id: 1, name: "apple"}
+{id: 2, name: "orange"}
+```
+
+CSV データソースでは、CSV が 1 つのデータ型(すなわち文字列)しかサポートしないため `id` フィールドは文字列として解釈され、JSON データソースでは、JSON が数値のデータ型をサポートし値が整数として宣言されたため `id` フィールドは整数として解釈される点に注意すること。また、上記のテーブルスキーマについては、`any` がデフォルトのフィールド型であるため、各フィールドの `type` プロパティは省略できる。
+
+## フィールド制約 {#field-constraints}
+
+テーブルスキーマのフィールドの `constraints` プロパティは、フィールド値を検証するための制約を列挙するためにコンシューマーが使用できる。例えば、[Tabular Data Resource](https://specs.frictionlessdata.io/tabular-data-package/) に対してそのテーブルスキーマでデータを検証する場合や、データ入力インターフェースを介して収集・更新されるデータを検証する手段としてである。
+
+すべての制約はデータの論理表現に対してテストされなければならない (`MUST`)。また制約値の物理表現は、JSON で可能なプリミティブ型であってもよく (`MAY`)、あるいはフィールドの `type` と `format` のルールでキャスト可能な文字列として表現されてもよい。
+
+制約ディスクリプタは JSON `object` でなければならず (`MUST`)、以下のプロパティを 1 つ以上含んでもよい (`MAY`)。
+
+### `required`
+
+- **Type**: boolean
+- **Fields**: all
+
+このフィールドが `null` にできないかどうかを示す。required が `false`(デフォルト)の場合、`null` が許可される。データの物理表現において文字列がどのように `null` 値を表現できるかについては、`missingValues` のセクションを参照のこと。
+
+例えば、このデータファイル:
+
+```csv
+id,name
+1,apple
+2,
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string", "constraints": { "required": true } }
+  ]
+}
+```
+
+2 行目で `name` フィールドの値が欠けているため、無効となる。
+
+### `unique`
+
+- **Type**: boolean
+- **Fields**: all
+
+`true` の場合、そのフィールドのすべての値は、それが見つかるデータファイル内で一意でなければならない (`MUST`)。
+
+例えば、このデータファイル:
+
+```csv
+id,name
+1,apple
+2,apple
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string", "constraints": { "unique": true } }
+  ]
+}
+```
+
+`name` フィールドが重複した値を持つため、無効となる。
+
+### `minLength` {#minLength}
+
+- **Type**: integer
+- **Fields**: collections (string, array, object)
+
+値の最小の長さを指定する整数。
+
+例えば、このデータファイル:
+
+```csv
+id,name
+1,apple
+2,plum
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string", "constraints": { "minLength": 5 } }
+  ]
+}
+```
+
+`name` フィールドが短すぎる値を持つため、無効となる。
+
+### `maxLength` {#maxLength}
+
+- **Type**: integer
+- **Fields**: collections (string, array, object)
+
+値の最大の長さを指定する整数。
+
+例えば、このデータファイル:
+
+```csv
+id,name
+1,apple
+2,grapefruit
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string", "constraints": { "maxLength": 5 } }
+  ]
+}
+```
+
+`name` フィールドが長すぎる値を持つため、無効となる。
+
+### `minimum`
+
+- **Type**: integer, number, date, time, datetime, duration, year, yearmonth
+- **Fields**: integer, number, date, time, datetime, duration, year, yearmonth
+
+フィールドの最小値を指定する。これは値内の要素数をチェックする `minLength` とは異なる。`minimum` 値制約は、フィールドの値が指定された値以上であるかどうかをチェックする。範囲チェックはフィールドの `type` に依存する。例えば、integer フィールドは最小値 100 を持つことができ、date フィールドは最小日付を持つことができる。`minimum` 値制約が指定される場合、フィールドディスクリプタは `type` キーを含まなければならない (`MUST`)。
+
+例えば、このデータファイル:
+
+```csv
+id,name,price
+1,apple,100
+2,orange,50
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string" },
+    { "name": "price", "type": "integer", "constraints": { "minimum": 100 } }
+  ]
+}
+```
+
+`price` フィールドが低すぎる値を持つため、無効となる。
+
+### `maximum`
+
+- **Type**: integer, number, date, time, datetime, duration, year, yearmonth
+- **Fields**: integer, number, date, time, datetime, duration, year, yearmonth
+
+`minimum` と同様だが、フィールドの最大値を指定する。
+
+例えば、このデータファイル:
+
+```csv
+id,name,price
+1,apple,100
+2,orange,150
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string" },
+    { "name": "price", "type": "integer", "constraints": { "maximum": 100 } }
+  ]
+}
+```
+
+`price` フィールドが高すぎる値を持つため、無効となる。
+
+### `exclusiveMinimum` {#exclusiveMinimum}
+
+- **Type**: integer, number, date, time, datetime, duration, year, yearmonth
+- **Fields**: integer, number, date, time, datetime, duration, year, yearmonth
+
+`minimum` と同様だが、排他的な範囲を表現するためのもの。
+
+例えば、このデータファイル:
+
+```csv
+id,name,price
+1,apple,100
+2,orange,0
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string" },
+    { "name": "price", "type": "integer", "constraints": { "exclusiveMinimum": 0 } }
+  ]
+}
+```
+
+`price` フィールドが低すぎる値を持つため、無効となる。
+
+### `exclusiveMaximum` {#exclusiveMaximum}
+
+- **Type**: integer, number, date, time, datetime, duration, year, yearmonth
+- **Fields**: integer, number, date, time, datetime, duration, year, yearmonth
+
+`maximum` と同様だが、排他的な範囲を表現するためのもの。
+
+例えば、このデータファイル:
+
+```csv
+id,name,price
+1,apple,100
+2,orange,150
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string" },
+    { "name": "price", "type": "integer", "constraints": { "exclusiveMaximum": 150 } }
+  ]
+}
+```
+
+`price` フィールドが高すぎる値を持つため、無効となる。
+
+### `jsonSchema` {#jsonSchema}
+
+- **Type**: object
+- **Fields**: array, object
+
+フィールド値を検証するための有効な JSON Schema オブジェクト。フィールド値が提供された JSON Schema に適合する場合、そのフィールド値は有効である。
+
+例えば、このデータファイル:
+
+```csv
+id,name,price
+1,apple,{"value": 100}
+2,orange,{"value": "bad"}
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string" },
+    {
+      "name": "price",
+      "type": "object",
+      "constraints": {
+        "jsonSchema": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "integer" }
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+`price` フィールドが整数でない値を持つため、無効となる。
+
+### `pattern`
+
+- **Type**: string
+- **Fields**: string
+
+フィールド値をテストするために使用できる正規表現。正規表現が一致すれば、その値は有効である。このフィールドの値は、標準的な [XML Schema 正規表現構文](http://www.w3.org/TR/xmlschema-2/#regexs) に適合しなければならない (`MUST`)。
+
+例えば、このデータファイル:
+
+```csv
+id,name
+1,apple
+2,orange
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string", "constraints": { "pattern": "^a.*$" } }
+  ]
+}
+```
+
+`name` フィールドがパターンに一致しない値を持つため、無効となる。
+
+### `enum`
+
+- **Type**: array
+- **Fields**: all
+
+フィールドの値は、`enum` 配列内の値のいずれか 1 つに正確に一致しなければならない (`MUST`)。
+
+例えば、このデータファイル:
+
+```csv
+id,name
+1,apple
+2,orange
+```
+
+このスキーマ定義で:
+
+```json
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "name", "type": "string", "constraints": { "enum": ["apple"] } }
+  ]
+}
+```
+
+`name` フィールドが `enum` 配列にない値を持つため、無効となる。
+
+:::note[実装上の注意]
+
+- 実装は、サポートされていない制約に対して値を評価しようとした場合、エラーを報告すべきである (`SHOULD`)。
+- 制約ディスクリプタは複数の制約を含んでもよく (`MAY`)、その場合、実装はフィールド値が有効かどうかを判断する際にすべての制約を適用しなければならない (`MUST`)。
+- 制約はフィールド値と制約値の論理表現に対して適用されなければならない (`MUST`)。
+
+:::
+
+## 関連する取り組み {#related-work}
+
+テーブルスキーマは、とりわけ以下の仕様および実装から内容および/または着想を得ている。
+
+- [XML Schema](http://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes)
+- [Google BigQuery](https://developers.google.com/bigquery/docs/import#loading_json_files)
+- [JSON Schema](http://json-schema.org)
+- [DSPL](https://developers.google.com/public-data/docs/schema/dspl18)
+- [HTML5 Forms](http://www.whatwg.org/specs/web-apps/current-work/#attr-input-typ)
+- [Elasticsearch](http://www.elasticsearch.org/guide/reference/mapping/)

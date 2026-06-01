@@ -1,0 +1,126 @@
+---
+title: Extensions
+description: ドメイン固有のニーズに応えるデータパッケージ標準の拡張機能。
+sidebar:
+  order: 5
+authors:
+  - Rufus Pollock
+  - Paul Walsh
+  - Adam Kariv
+  - Evgeny Karev
+  - Peter Desmet
+  - Data Package Working Group
+---
+
+<table>
+  <tr>
+    <th>Authors</th>
+    <td>{frontmatter.authors.join(", ")}</td>
+  </tr>
+</table>
+
+<p>{frontmatter.description}</p>
+
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳です。
+> 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照してください。
+
+## 言語 {#language}
+
+本書におけるキーワード `MUST`、`MUST NOT`、`REQUIRED`、`SHALL`、`SHALL NOT`、`SHOULD`、`SHOULD NOT`、`RECOMMENDED`、`MAY`、`OPTIONAL` は、[RFC 2119](https://www.ietf.org/rfc/rfc2119.txt) に記述されているとおりに解釈されるものとする。
+
+## はじめに {#introduction}
+
+データパッケージ標準は、一般的なアプリケーション向けに豊富なメタデータおよびデータ機能を提供する。同時に、データパッケージ標準はその中核においてドメインに依存しないものであり、生物学や医学といった特定の知識領域におけるメタデータを記述するための組み込みの手段は一切提供しない。
+
+ドメイン固有の拡張(extension)は、知識ドメインの特定のニーズを満たすためにデータパッケージのメタデータを充実させる方法である。例えば、著名なデータパッケージ拡張として次のようなものがある。
+
+- [Camera Trap Data Package](https://camtrap-dp.tdwg.org/)
+- [Fiscal Data Package](https://fiscal.datapackage.org)
+
+## Extension {#extension}
+
+データパッケージ標準は、[プロファイル](/standard/glossary/#profile)の概念に基づく、シンプルでありながら強力な拡張機構を備えている。拡張とは、一般的に言えば、データパッケージ標準仕様に対して 1 つ以上のドメイン固有のプロファイルを提供するプロジェクトのことである。
+
+ユーザーの観点からは、カスタムプロファイルは対応する仕様のディスクリプタ(descriptor)における `$schema` プロパティとして提供できる。プロファイルを持たせることで、実装に対してそのプロファイルの JSON Schema ルールを用いてディスクリプタを検証するよう指示する。
+
+通常、拡張の対象となる仕様はデータパッケージである。コンテナフォーマットとして、メタデータの充実にとって最も自然な対象だからである。同時に、技術的には中核仕様のいずれも拡張可能である。例えば、テーブルスキーマのカタログを構築する場合、以下に述べるのと同じ手法でテーブルスキーマ仕様を拡張することが可能である。
+
+なお、データパッケージ標準の拡張システムは、JSON Schema 標準の組み込み機能をいかなる形でも拡張することなく、完全にそれに依拠している。これによりシステムは堅牢になり、[テキストエディタでの検証](https://code.visualstudio.com/docs/languages/json#_mapping-in-the-json)のような豊富なツールサポートが得られる。
+
+最新の JSON Schema 機能と、中核となるデータパッケージ標準仕様のいずれのディスクリプタに対してもプロファイルを提供できる能力とを組み合わせることで、以下を含む(ただしこれらに限定されない)ほぼあらゆるメタデータ充実の目標を達成できる。
+
+- ドメイン固有の新しいプロパティを追加する。
+- 既存のプロパティに対して特定の要件への準拠を要求する。
+- どのようなリソースが期待されるかを定義する。
+- リソースに対して特定の dialect またはスキーマの要件を満たすよう要求する。
+- 既存のプロファイルを高水準な拡張の一部として組み合わせる。
+- ドメイン固有の dialect およびスキーマのカタログを作成する。
+
+## Example {#example}
+
+例として、データパッケージを構成する各リソースに `geopoint` マーカーが提供されることを要求する Spatial Data Package を作成する。
+
+### Profile {#profile}
+
+まず、データパッケージのプロファイルを作成する必要がある。これは[仕様の要件](/standard/data-package/#schema)に従ってデフォルトのデータパッケージプロファイルを含んでいる点に注意すること。
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spatial Data Package Profile",
+  "type": "object",
+  "allOf": [
+    { "$ref": "https://datapackage.org/profiles/2.0/datapackage.json" },
+    { "$ref": "#/definitions/spatialMixin" }
+  ],
+  "definitions": {
+    "spatialMixin": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "item": {
+            "type": "object",
+            "required": ["geopoint"],
+            "properties": {
+              "geopoint": {
+                "type": "object",
+                "properties": {
+                  "lon": { "type": "number" },
+                  "lat": { "type": "number" },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Descriptor {#descriptor}
+
+上記のプロファイルが `https://spatial.datapackage.org/profiles/1.0/datapackage.json` で公開されているとする。この場合、例示した Spatial Data Package (v1) に準拠するデータパッケージのディスクリプタは以下のようになる。
+
+```json
+{
+  "$schema": "https://spatial.datapackage.org/profiles/1.0/datapackage.json",
+  "title": "Spatial Data Package Descriptor",
+  "resources": [
+    {
+      "name": "expedition-1",
+      "path": "expedition-1.csv",
+      "geopoint": {
+        "lon": 90,
+        "lat": 90
+      }
+    }
+  ]
+}
+```
+
+### Software {#software}
+
+拡張のことを認識していなくても、あらゆるデータパッケージソフトウェア実装は、ドメイン固有のプロパティと一般的なデータパッケージのプロパティの両方について、Spatial Data Package をそのまま検証することになる。ただし我々は、拡張の作者に対して、既存のソフトウェアの上に構築し、プログラミングモデルのレベルでもドメイン固有のプロパティをサポートすることを推奨する。

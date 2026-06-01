@@ -1,0 +1,280 @@
+---
+title: データリソース
+description: 個々のテーブルやファイルといった単一のデータリソースを記述しパッケージ化するためのシンプルな形式。データリソースの本質は、それが記述するデータへのロケータである。より豊かなメタデータを提供するために、さまざまなプロパティを宣言できる。
+sidebar:
+  order: 2
+profile: /profiles/2.0/dataresource.json
+authors:
+  - Rufus Pollock
+  - Paul Walsh
+  - Adam Kariv
+  - Evgeny Karev
+  - Peter Desmet
+  - Data Package Working Group
+---
+
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳です。
+> 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照してください。
+
+<table>
+  <tr>
+    <th>Authors</th>
+    <td>{frontmatter.authors.join(", ")}</td>
+  </tr>
+  <tr>
+    <th>Profile</th>
+    <td>
+      <a href={frontmatter.profile}>{frontmatter.profile}</a>
+    </td>
+  </tr>
+</table>
+
+<p>{frontmatter.description}</p>
+
+## 言語 {#language}
+
+本書における各キーワード `MUST`、`MUST NOT`、`REQUIRED`、`SHALL`、`SHALL NOT`、`SHOULD`、`SHOULD NOT`、`RECOMMENDED`、`MAY`、`OPTIONAL` は、[RFC 2119](https://www.ietf.org/rfc/rfc2119.txt) に記載されているとおりに解釈されるものとする。
+
+## ディスクリプタ {#descriptor}
+
+データリソースのディスクリプタ(descriptor)は、[Descriptor](/standard/glossary/#descriptor) の定義に従ったディスクリプタでなければならない (`MUST`)。ディスクリプタに含めることのできる標準プロパティの一覧は、[Properties](#properties) のセクションで定義されている。
+
+データリソースのディスクリプタの例:
+
+```json
+{
+  "name": "solar-system",
+  "path": "http://example.com/solar-system.csv",
+  "title": "The Solar System",
+  "description": "My favourite data about the solar system.",
+  "format": "csv",
+  "mediatype": "text/csv",
+  "encoding": "utf-8",
+  "bytes": 1,
+  "hash": ...,
+  "schema": ...,
+  "sources": [ ... ],
+  "licenses": [ ... ]
+}
+```
+
+## プロパティ {#properties}
+
+ディスクリプタの標準プロパティを以下に示す。ディスクリプタには、以下に必須および任意のプロパティとして示すもの以外にも、任意の数のプロパティを含めてもよい (`MAY`)。
+
+### 一般 {#general}
+
+以下のプロパティは、あらゆるデータリソースに適用される。
+
+#### `name` [required] {#name}
+
+リソースは `name` プロパティを含まなければならない (`MUST`)。name は、このリソースに使用される単純な名前または識別子である。
+
+- このデータパッケージ内のすべてのリソースの中で一意でなければならない (`MUST`)。
+- 人間が読める形式であり、英数字の小文字に加えて `.`、`-`、`_` のみで構成されるべきである (`SHOULD`)。
+- name は、リソースが記述するデータファイルのファイル名(拡張子を除く)に対応させるのが通例である。
+
+#### `path` または `data` [required] {#path-or-data}
+
+リソースは、当該リソースに紐づくデータの場所を記述するプロパティを含まなければならない (`MUST`)。リソースデータの場所は、これら2つのプロパティのうち1つ(かつ1つだけ)が存在することによって指定されなければならない (`MUST`)。
+
+- `path`: オンラインまたはローカルのディスク上にあるファイル内のデータの場合。
+- `data`: ディスクリプタ自体の中にインラインで含まれるデータの場合。
+
+##### 単一ファイル {#single-file}
+
+リソースが単一のファイルのみを持つ場合、`path` は、[URL of Path](/standard/glossary/#url-or-path) の定義における「url-or-path」である文字列でなければならない (`MUST`)。
+
+##### 複数ファイル {#multiple-files}
+
+通常、リソースには単一のファイルのみが紐づく。しかし、データが複数のファイルに分割された単一のリソースを持つほうが都合のよい場合もある。たとえば、データが大きく、1つのファイルにまとめると不便になるような場合である。
+
+このユースケースをサポートするために、`path` プロパティは単一の文字列ではなく文字列の配列であってもよい (`MAY`)。
+
+```json
+{
+  "path": ["myfile1.csv", "myfile2.csv"]
+}
+```
+
+`path` 配列の中で、完全修飾URLと相対パスを混在させることは許可されない。文字列はすべて相対パスであるか、すべてURLであるかのいずれかでなければならない (`MUST`)。
+
+:::note
+配列内のすべてのファイルは、構造・形式・ダイアレクトなどの点で同一でなければならない (`MUST`)。実装は、最も単純な方法でファイルを連結し、その結果を1つの大きなファイルとして扱えなければならない (MUST)。
+:::
+
+##### インラインデータ {#inline-data}
+
+リソースデータは、外部ファイルに保存される代わりに、`data` プロパティを使ってリソース上に `inline` で同梱できる。
+
+data プロパティの値は任意の型のデータであってよい。ただし、JSONの制約により値は文字列でなければならないため、バイナリデータの場合はエンコード(たとえば Base64 へ)する必要がある。data プロパティの値の型およびエンコーディングに関する情報は、format(または mediatype)プロパティおよび encoding プロパティによって提供されるべきである (SHOULD)。
+
+data プロパティの値は、次のいずれかでなければならない (`MUST`)。
+
+- **JSON配列またはオブジェクト**: この場合、データはJSONデータと見なされ、そのように処理されるべきである (SHOULD)。
+- **JSON文字列**: この場合、format または mediatype プロパティが提供されなければならない (`MUST`)。
+
+したがって、リソースオブジェクトの利用者は、format または mediatype プロパティが提供されていない場合、データがJSONであると仮定して、そのように処理を試みてもよい (`MAY`)。
+
+たとえば、インラインJSONの場合:
+
+```json
+{
+  "resources": [
+    {
+      "format": "json",
+      "data": [{ "a": 1, "b": 2 }]
+    }
+  ]
+}
+```
+
+あるいはインラインCSVの場合:
+
+```json
+{
+  "resources": [
+    {
+      "format": "csv",
+      "data": "A,B,C\n1,2,3\n4,5,6"
+    }
+  ]
+}
+```
+
+:::note[Backward Compatibility]
+`path` プロパティが提供されていないが、データパッケージ標準 (v0) で定義されていた `url` プロパティが存在する場合、実装はそれを `path` プロパティと等価なものとして扱わなければならない (`MUST`)。
+:::
+
+#### `type`
+
+データリソースのディスクリプタは、`type` プロパティを含んでもよい (`MAY`)。これは次の値を取りうる文字列でなければならない (`MUST`)。
+
+- `table`: リソースが [Tabular Data](/standard/glossary/#tabular-data) の定義に従った表形式データであることを示す。[Tabular Resource](#tabular) のプロパティについてさらに参照されたい。
+
+`type` プロパティが提供されていない場合、リソースは特定の種類を持たないファイルと見なされる。実装は、`type` をデータソースまたは形式から検出できる場合、特定の種類を持たないファイルに対して、たとえば表形式といった追加のインターフェースを提供してもよい (`MAY`)。
+
+:::note[Backward Compatibility]
+リソースが `tabular-data-resource` または `https://specs.frictionlessdata.io/schemas/tabular-data-resource.json` に等しい `profile` プロパティを持つ場合、実装はそれを `type` プロパティが `table` に設定されたものとして扱わなければならない (`MUST`)。
+:::
+
+#### `$schema` {#dollar-schema}
+
+ルートレベルのデータリソースのディスクリプタは、`$schema` プロパティを持ってもよい (`MAY`)。これは [Profile](/standard/glossary/#profile) の定義に従ったプロファイルでなければならず (`MUST`)、本仕様が要求するすべてのメタデータ制約を含まなければならない (`MUST`)。
+
+デフォルト値は `https://datapackage.org/profiles/1.0/dataresource.json` であり、推奨値は `https://datapackage.org/profiles/2.0/dataresource.json` である。
+
+:::note[Backward Compatibility]
+`$schema` プロパティが提供されていないが、ディスクリプタが `profile` プロパティを持つ場合、データ利用者は [Profiles](https://specs.frictionlessdata.io/profiles/) 仕様に従ってディスクリプタを検証しなければならない (`MUST`)。
+:::
+
+#### `title`
+
+リソースのタイトルまたはラベル。
+
+#### `description`
+
+リソースの説明。
+
+#### `format`
+
+この種類のリソースの標準的なファイル拡張子であることが期待される。たとえば `csv`、`xls`、`json` など。
+
+#### `mediatype`
+
+リソースのメディアタイプ/MIMEタイプ。たとえば `text/csv` や `application/vnd.ms-excel` など。メディアタイプは、Internet Assigned Numbers Authority (IANA) によって[メディアタイプレジストリ](https://www.iana.org/assignments/media-types/media-types.xhtml)で管理されている。
+
+#### `encoding`
+
+リソースのデータファイルの文字エンコーディング(テキストファイルにのみ適用される)。値は、[IANAに登録された文字エンコーディング](http://www.iana.org/assignments/character-sets/character-sets.xhtml)の「Preferred MIME Names」のいずれかであるべきである (`SHOULD`)。このプロパティに値が指定されていない場合、エンコーディングは実装レベルで検出されるべきである (`SHOULD`)。テキストファイルのデフォルトエンコーディングとしては、UTF-8(BOMなし)を使用することが推奨される (`RECOMMENDED`)。
+
+#### `bytes`
+
+ファイルのサイズ(バイト単位)。
+
+#### `hash`
+
+このリソースのMD5ハッシュ。他のアルゴリズムは、ハッシュ値の前にアルゴリズム名を小文字で付けることで示すことができる。たとえば:
+
+```json
+{
+  "hash": "sha1:8843d7f92416211de9ebb963ff4ce28125932878"
+}
+```
+
+#### `sources`
+
+[Data Package](/standard/data-package/#sources) と同様の、データソースの一覧。指定されていない場合、リソースはデータパッケージから継承する。
+
+#### `licenses`
+
+[Data Package](/standard/data-package/#licenses) と同様の、ライセンスの一覧。指定されていない場合、リソースはデータパッケージから継承する。
+
+### 表形式 {#tabular}
+
+以下のプロパティは、あらゆる表形式データリソースに適用される。
+
+#### `path` または `data` [required] {#tabular-path-or-data}
+
+データの提供に `path` プロパティを使用する場合、それは [Tabular Data](/standard/glossary/#tabular-data) を含まなければならない (`MUST`)。
+
+表形式データリソースのデータの提供に `data` プロパティを使用する場合、それは `array` でなければならず (`MUST`)、配列内の各項目は次のいずれかでなければならない (`MUST`)。
+
+- 配列内の各エントリがテーブル内の当該セルの値となる配列、または
+- 各キーがその行のヘッダーに対応し、値がそのヘッダーに対するその行のセル値に対応するオブジェクト。
+
+配列の配列の例:
+
+```json
+[
+  ["A", "B", "C"],
+  [1, 2, 3],
+  [4, 5, 6]
+]
+```
+
+オブジェクトの配列の例:
+
+```json
+[
+  { "A": 1, "B": 2, "C": 3 },
+  { "A": 4, "B": 5, "C": 6 }
+]
+```
+
+#### `dialect`
+
+表形式データリソースは、リソースデータの表形式ダイアレクトを記述するための `dialect` プロパティを持ってもよい (`MAY`)。提供される場合、`dialect` プロパティは、オブジェクトまたは [URL-or-Path](/standard/glossary/#url-or-path) の形式の [Table Dialect](/standard/table-dialect) ディスクリプタでなければならない (`MUST`)。
+
+ダイアレクトを持つリソースの例:
+
+```json
+{
+  "name": "table",
+  "type": "table",
+  "path": "table.csv",
+  "dialect": {
+    "delimiter": ";"
+  }
+}
+```
+
+#### `schema`
+
+表形式データリソースは、リソースデータの表形式スキーマを記述するための `schema` プロパティを持つべきである (`SHOULD`)。提供される場合、`schema` プロパティは、オブジェクトまたは [URL-or-Path](/standard/glossary/#url-or-path) の形式の [Table Schema](/standard/table-schema) ディスクリプタでなければならない (`MUST`)。
+
+スキーマを持つリソースの例:
+
+```json
+{
+  "name": "table",
+  "type": "table",
+  "path": "table.csv",
+  "schema": {
+    "fields": [
+      { "name": "id", "type": "integer" },
+      { "name": "name", "type": "string" }
+    ]
+  }
+}
+```
