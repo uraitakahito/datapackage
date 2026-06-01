@@ -48,8 +48,13 @@ git push origin develop   # publish-ja が発火 → Pages 更新
    `../../assets/hero.png` は、`ja/index.mdx` では
    **`../../../components/About.astro` / `../../../assets/hero.png`**。
    → プレーン `.md`(prose のみ)はこの問題なし。`.mdx`(import あり)だけ注意。
-2. **内部リンク**: 英語ソースのリンク構造はそのまま残す(書き換えない)。base(`/datapackage`)は
-   ビルド時に処理される。日本語ページから日本語ページへ確実に飛ばしたい場合のみ `/ja/...` を検討。
+2. **内部リンク(確定済み)**: 本文の内部リンクは **英語の絶対パスのまま**書く
+   (例: `[Extensions](/standard/extensions)`)。`/ja/` を自分で付けないこと。
+   `astro.config.js` の `rehypeBaseLinks` プラグインが、ビルド時に base(`/datapackage`)と、
+   ja ページなら locale(`/ja`)を自動付与する(アセットには locale を付けない)。
+   ※ Astro/Starlight は本文の著者リンクに base を付けないため、このプラグインで補っている。
+   ※ frontmatter の hero アクションやコンポーネント prop の `href` は rehype を通らず base が
+   付かないので、homepage では使わず markdown リンクで導線を作る。
 3. **lint**: pre-push フックで `npm test`(eslint + prettier)が走る。push 前に
    `npx prettier --write content/docs/ja/<file>` で整形しておく(英語ファイルは触らない)。
 
@@ -80,7 +85,7 @@ git push origin develop   # publish-ja が発火 → Pages 更新
 | standard/table-dialect.mdx | mdx  | ☐    |
 | standard/table-schema.mdx  | mdx  | ☐    |
 | standard/extensions.mdx    | mdx  | ☐    |
-| standard/glossary.mdx      | mdx  | ☐    |
+| standard/glossary.mdx      | mdx  | ☑   |
 | standard/security.mdx      | mdx  | ☐    |
 
 ### recipes (13)
@@ -119,8 +124,8 @@ git push origin develop   # publish-ja が発火 → Pages 更新
 
 ### その他
 
-| ファイル  | 形式 | 状態 | 備考                                    |
-| --------- | ---- | ---- | --------------------------------------- |
-| index.mdx | mdx  | ◑    | 種ページ作成済(splash のみ。本文は最小) |
+| ファイル  | 形式 | 状態 | 備考                                 |
+| --------- | ---- | ---- | ------------------------------------ |
+| index.mdx | mdx  | ☑   | 完成版(splash hero + 主要導線リンク) |
 
 合計: 33 ファイル(+ index は種を作成済)。
