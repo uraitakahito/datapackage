@@ -69,58 +69,58 @@ git push origin develop   # publish-ja が発火 → Pages 更新
 
 | ファイル                 | 形式 | 状態 |
 | ------------------------ | ---- | ---- |
-| overview/introduction.md | md   | ☐    |
-| overview/software.mdx    | mdx  | ☐    |
-| overview/adoption.mdx    | mdx  | ☐    |
-| overview/governance.md   | md   | ☐    |
-| overview/contributing.md | md   | ☐    |
-| overview/changelog.md    | md   | ☐    |
+| overview/introduction.md | md   | ☑   |
+| overview/software.mdx    | mdx  | ☑   |
+| overview/adoption.mdx    | mdx  | ☑   |
+| overview/governance.md   | md   | ☑   |
+| overview/contributing.md | md   | ☑   |
+| overview/changelog.md    | md   | ☑   |
 
 ### standard (7) — 仕様本体
 
 | ファイル                   | 形式 | 状態 |
 | -------------------------- | ---- | ---- |
-| standard/data-package.mdx  | mdx  | ☐    |
-| standard/data-resource.mdx | mdx  | ☐    |
-| standard/table-dialect.mdx | mdx  | ☐    |
-| standard/table-schema.mdx  | mdx  | ☐    |
-| standard/extensions.mdx    | mdx  | ☐    |
+| standard/data-package.mdx  | mdx  | ☑   |
+| standard/data-resource.mdx | mdx  | ☑   |
+| standard/table-dialect.mdx | mdx  | ☑   |
+| standard/table-schema.mdx  | mdx  | ☑   |
+| standard/extensions.mdx    | mdx  | ☑   |
 | standard/glossary.mdx      | mdx  | ☑   |
-| standard/security.mdx      | mdx  | ☐    |
+| standard/security.mdx      | mdx  | ☑   |
 
 ### recipes (13)
 
 | ファイル                               | 形式 | 状態 |
 | -------------------------------------- | ---- | ---- |
-| recipes/caching-of-resources.md        | md   | ☐    |
-| recipes/compression-of-resources.md    | md   | ☐    |
-| recipes/data-catalog.md                | md   | ☐    |
-| recipes/data-dependencies.md           | md   | ☐    |
-| recipes/data-package-version.md        | md   | ☐    |
-| recipes/external-foreign-keys.md       | md   | ☐    |
-| recipes/files-inside-archives.md       | md   | ☐    |
-| recipes/json-data-resources.md         | md   | ☐    |
-| recipes/language-support.md            | md   | ☐    |
-| recipes/metadata-in-table-schema.md    | md   | ☐    |
-| recipes/private-properties.md          | md   | ☐    |
-| recipes/relationship-between-fields.md | md   | ☐    |
-| recipes/translation-support.md         | md   | ☐    |
+| recipes/caching-of-resources.md        | md   | ☑   |
+| recipes/compression-of-resources.md    | md   | ☑   |
+| recipes/data-catalog.md                | md   | ☑   |
+| recipes/data-dependencies.md           | md   | ☑   |
+| recipes/data-package-version.md        | md   | ☑   |
+| recipes/external-foreign-keys.md       | md   | ☑   |
+| recipes/files-inside-archives.md       | md   | ☑   |
+| recipes/json-data-resources.md         | md   | ☑   |
+| recipes/language-support.md            | md   | ☑   |
+| recipes/metadata-in-table-schema.md    | md   | ☑   |
+| recipes/private-properties.md          | md   | ☑   |
+| recipes/relationship-between-fields.md | md   | ☑   |
+| recipes/translation-support.md         | md   | ☑   |
 
 ### guides (4)
 
 | ファイル                         | 形式 | 状態 |
 | -------------------------------- | ---- | ---- |
-| guides/using-data-package.md     | md   | ☐    |
-| guides/extending-data-package.md | md   | ☐    |
-| guides/csvw-data-package.md      | md   | ☐    |
-| guides/mediawiki-tabular-data.md | md   | ☐    |
+| guides/using-data-package.md     | md   | ☑   |
+| guides/extending-data-package.md | md   | ☑   |
+| guides/csvw-data-package.md      | md   | ☑   |
+| guides/mediawiki-tabular-data.md | md   | ☑   |
 
 ### extensions (2)
 
 | ファイル                           | 形式 | 状態 |
 | ---------------------------------- | ---- | ---- |
-| extensions/camtrap-data-package.md | md   | ☐    |
-| extensions/fiscal-data-package.md  | md   | ☐    |
+| extensions/camtrap-data-package.md | md   | ☑   |
+| extensions/fiscal-data-package.md  | md   | ☑   |
 
 ### その他
 
