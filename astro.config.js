@@ -8,6 +8,40 @@ import starlightBlog from "starlight-blog"
 
 // import starlightLinksValidator from "starlight-links-validator"
 
+// fork (base=/datapackage) では Astro は本文(著者が書いた markdown/MDX)の root 相対
+// リンク・画像に base を付与しない (Starlight 生成のナビ等は別途 base+locale 対応済)。
+// 本文の href/src が "/" 始まりのものに base を付け、ja ページのドキュメントリンクには
+// locale (/ja) も付ける。アセット (拡張子あり) には locale を付けない。
+function rehypeBaseLinks() {
+  const base = (process.env.DP_BASE || "").replace(/\/$/, "")
+  return (tree, file) => {
+    if (!base) return
+    const path = file.path || (file.history && file.history[0]) || ""
+    const inJa = /[\\/]docs[\\/]ja[\\/]/.test(path)
+    const visit = node => {
+      if (node.type === "element" && node.properties) {
+        for (const attr of ["href", "src"]) {
+          const val = node.properties[attr]
+          if (
+            typeof val === "string" &&
+            val.startsWith("/") &&
+            !val.startsWith("//") &&
+            !val.startsWith(base + "/")
+          ) {
+            const lastSeg = val.split(/[?#]/)[0].split("/").pop() || ""
+            const isAsset = lastSeg.includes(".")
+            const locale =
+              inJa && !isAsset && !val.startsWith("/ja/") && val !== "/ja" ? "/ja" : ""
+            node.properties[attr] = base + locale + val
+          }
+        }
+      }
+      if (node.children) node.children.forEach(visit)
+    }
+    visit(tree)
+  }
+}
+
 // https://astro.build/config
 export default defineConfig({
   // site/base は env 経由: 本家の apex 配信 (datapackage.org) はそのまま、
@@ -111,6 +145,7 @@ export default defineConfig({
           behavior: "wrap",
         },
       ],
+      rehypeBaseLinks,
     ],
   },
   vite: {
