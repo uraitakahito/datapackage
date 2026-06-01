@@ -1,0 +1,54 @@
+# 日本語版 (develop) を Astro + Starlight でビルドし、fork の GitHub Pages に公開する。
+# 本家の datapackage.org は外部ホスティングで別管理。継承 general.yaml は main/PR の lint のみで
+# develop では走らないため、このワークフローだけが develop push で発火する。
+name: publish-ja
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+# GitHub Pages デプロイに必要な権限を job レベルで宣言する。
+# repo 既定の workflow 権限 (read) は変更不要。
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時実行を 1 本に直列化 (デプロイ競合を防ぐ)。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build ja site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # astro build の前に profiles を生成する (public/profiles/<version>/)
+      - run: npm run generate
+      - name: Build (ja site, base=/datapackage)
+        run: npx astro build
+        env:
+          DP_SITE: https://uraitakahito.github.io
+          DP_BASE: /datapackage
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build # astro.config.js の outDir
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

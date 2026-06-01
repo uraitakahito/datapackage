@@ -1,6 +1,7 @@
 import { rehypeHeadingIds } from "@astrojs/markdown-remark"
 import starlight from "@astrojs/starlight"
 import { defineConfig } from "astro/config"
+import process from "process"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import { remarkHeadingId } from "remark-custom-heading-id"
 import starlightBlog from "starlight-blog"
@@ -9,12 +10,22 @@ import starlightBlog from "starlight-blog"
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://datapackage.org",
+  // site/base は env 経由: 本家の apex 配信 (datapackage.org) はそのまま、
+  // fork の Pages ビルドだけ DP_SITE/DP_BASE で /datapackage 配下に出す。
+  site: process.env.DP_SITE ?? "https://datapackage.org",
+  base: process.env.DP_BASE,
   srcDir: ".",
   outDir: "build",
   integrations: [
     starlight({
       title: "Data Package Standard",
+      // i18n: 英語=root locale / 日本語=ja。英語ファイルは触らず ja/ に追加するだけなので
+      // upstream 追従マージが無競合になる。未訳ページは英語へ自動フォールバック。
+      defaultLocale: "root",
+      locales: {
+        root: { label: "English", lang: "en" },
+        ja: { label: "日本語", lang: "ja" },
+      },
       description:
         "Data Package is a standard consisting of a set of simple yet extensible specifications to describe datasets, data files and tabular data. It is a data definition language (DDL) and data API that facilitates findability, accessibility, interoperability, and reusability (FAIR) of data.",
       logo: {
