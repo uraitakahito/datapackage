@@ -1,0 +1,183 @@
+---
+title: ソフトウェア
+sidebar:
+  order: 5
+---
+
+import { software } from "../../../../assets"
+import ImageLinkCard from "../../../../components/ImageLinkCard.astro"
+import { LinkCard, CardGrid } from "@astrojs/starlight/components"
+
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳である。
+> 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照のこと。
+
+:::tip[貢献に関する注記]
+以下に掲載されていないデータパッケージ対応ソフトウェアをご存じの場合は、ぜひお知らせいただきたい。issue を作成するか、pull request を送って貢献していただきたい。
+:::
+
+データパッケージは、標準をサポートする包括的なソフトウェア製品群に支えられている。ノーコードのビジュアルツール **Open Data Editor** から、10 のプログラミング言語に対応した低レベルのドライバまで揃っている。利用可能なソフトウェアの一覧を以下に示す。
+
+## Visual {#visual}
+
+<ImageLinkCard
+  title="Open Data Editor"
+  imageSrc={software.ode.src}
+  description="<br /> あらゆる種類のデータ(データセット、テーブル、チャート、地図、ストーリーなど)を探索・公開するためのノーコードアプリケーション。オープンな標準と生成 AI を基盤とする、永久に無料かつオープンソースのプロジェクト。"
+  href="https://opendataeditor.okfn.org"
+/>
+
+<CardGrid>
+<ImageLinkCard
+  title="Flatterer"
+  imageSrc={software.flatterer.src}
+  description="データ分析に役立つリレーショナルな出力を生成しようとする、こだわりのある JSON から CSV/XLSX/SQLITE/PARQUET/POSTGRES へのコンバータ。"
+  href="https://flatterer.opendata.coop/"
+/>
+
+<ImageLinkCard
+  title="Data Curator"
+  imageSrc={software.dataCurator.src}
+  description="Data Curator は、利用可能なオープンデータを記述・検証・共有するためのシンプルなデスクトップ向けデータエディタ。"
+  href="https://github.com/qcif/data-curator"
+/>
+</CardGrid>
+
+## Python {#python}
+
+<CardGrid>
+  <LinkCard
+    title="frictionless-py"
+    description="表形式データを記述・抽出・検証・変換する機能を提供する Python 向けデータ管理フレームワーク。"
+    href="https://framework.frictionlessdata.io/"
+  />
+  <LinkCard
+    title="dataflows"
+    description="DataFlows は、Python でデータ処理フローを構築するためのシンプルで直感的な軽量フレームワーク。"
+    href="https://github.com/datahq/dataflows"
+  />
+</CardGrid>
+
+## TypeScript {#typescript}
+
+<CardGrid>
+  <LinkCard
+    title="frictionless-ts"
+    description="データパッケージ標準と Polars DataFrame の上に構築された、高速な TypeScript 向けデータ管理フレームワーク。"
+    href="https://frictionlessdata.github.io/frictionless-ts"
+  />
+</CardGrid>
+
+## JavaScript {#javascript}
+
+<CardGrid>
+  <LinkCard
+    title="frictionless-js"
+    description="ファイルやデータセット、特に表形式のもの(CSV、Excel)にアクセスするための、軽量で標準化されたライブラリ。"
+    href="https://github.com/frictionlessdata/frictionless-js"
+  />
+  <LinkCard
+    title="datapackage-render-js"
+    description="データパッケージのビューをレンダリングするための React コンポーネント。"
+    href="https://github.com/frictionlessdata/datapackage-render-js"
+  />
+</CardGrid>
+
+## R {#r}
+
+<CardGrid>
+  <LinkCard
+    title="frictionless-r"
+    description="Frictionless データパッケージを読み書きするための R パッケージ。"
+    href="https://docs.ropensci.org/frictionless/"
+  />
+</CardGrid>
+
+## Ruby {#ruby}
+
+<CardGrid>
+  <LinkCard
+    title="datapackage-rb"
+    description="データパッケージを扱うための Ruby ライブラリおよびツール。"
+    href="https://github.com/frictionlessdata/datapackage-rb"
+  />
+  <LinkCard
+    title="tableschema-rb"
+    description="JSON Table Schema を扱うための Ruby ライブラリ。"
+    href="https://github.com/frictionlessdata/tableschema-rb"
+  />
+</CardGrid>
+
+## PHP {#php}
+
+<CardGrid>
+  <LinkCard
+    title="datapackage-php"
+    description="データパッケージを扱うための PHP ライブラリ。"
+    href="https://github.com/frictionlessdata/datapackage-php"
+  />
+  <LinkCard
+    title="tableschema-php"
+    description="テーブルスキーマを扱うための PHP ライブラリ。"
+    href="https://github.com/frictionlessdata/tableschema-php"
+  />
+</CardGrid>
+
+## Java {#java}
+
+<CardGrid>
+  <LinkCard
+    title="datapackage-java"
+    description="Frictionless Data のデータパッケージを扱うための Java ライブラリ。"
+    href="https://github.com/frictionlessdata/datapackage-java"
+  />
+  <LinkCard
+    title="tableschema-java"
+    description="テーブルスキーマを扱うための Java ライブラリ。"
+    href="https://github.com/frictionlessdata/tableschema-java"
+  />
+</CardGrid>
+
+## Swift {#swift}
+
+<CardGrid>
+  <LinkCard
+    title="datapackage-swift"
+    description="データパッケージを扱うための Swift ライブラリ。"
+    href="https://github.com/frictionlessdata/datapackage-swift"
+  />
+  <LinkCard
+    title="tableschema-swift"
+    description="テーブルスキーマを扱うための Swift ライブラリ。"
+    href="https://github.com/frictionlessdata/tableschema-swift"
+  />
+</CardGrid>
+
+## Go {#go}
+
+<CardGrid>
+  <LinkCard
+    title="datapackage-go"
+    description="データパッケージを扱うための Go ライブラリ。"
+    href="https://github.com/frictionlessdata/datapackage-go"
+  />
+  <LinkCard
+    title="tableschema-go"
+    description="テーブルスキーマを扱うための Go ライブラリ。"
+    href="https://github.com/frictionlessdata/tableschema-go"
+  />
+</CardGrid>
+
+## Julia {#julia}
+
+<CardGrid>
+  <LinkCard
+    title="datapackage-jl"
+    description="データパッケージを扱うための Julia ライブラリ。"
+    href="https://github.com/frictionlessdata/datapackage-jl"
+  />
+  <LinkCard
+    title="tableschema-jl"
+    description="テーブルスキーマを扱うための Julia ライブラリ。"
+    href="https://github.com/frictionlessdata/tableschema-jl"
+  />
+</CardGrid>

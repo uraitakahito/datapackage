@@ -1,0 +1,265 @@
+---
+title: 採用事例
+sidebar:
+  order: 6
+---
+
+import { adoption } from "../../../../assets"
+import ImageLinkCard from "../../../../components/ImageLinkCard.astro"
+import { LinkCard, CardGrid } from "@astrojs/starlight/components"
+
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳である。
+> 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照のこと。
+
+:::tip[貢献に関する注記]
+以下に掲載されていない、データパッケージを利用している他のプロジェクトをご存じの場合は、ぜひ共有していただきたい。issue を作成するか、pull request を送って貢献していただきたい。
+:::
+
+データパッケージのユースケースは、この標準化されたデータパッケージング形式が効率的なデータ管理・共有・分析にとって有用であることを示す、幅広いシナリオに及ぶ。主要なユースケースをいくつか以下に示す。
+
+## Data Portals {#data-portals}
+
+公開データのアクセシビリティを高めるためにデータパッケージ標準を採用しているデータポータル:
+
+<CardGrid>
+  <ImageLinkCard
+    title="Dryad"
+    imageSrc={adoption.dryad.src}
+    description="研究データの発見可能性・再利用性・引用性を高めるキュレーション済みリソースである Dryad に、Frictionless Data の検証機能を統合するパイロットプロジェクト。"
+    href="https://blog.okfn.org/2020/11/18/dryad-and-frictionless-data-collaboration/"
+  />
+  <ImageLinkCard
+    title="Our World in Data"
+    imageSrc={adoption.owid.src}
+    description="Our World in Data は、自らのデータセットをデータパッケージ標準を用いて公開している。ここに含まれるデータセットのほとんどは、国別の社会・経済指標に関する年次時系列データである。"
+    href="https://github.com/owid/owid-datasets"
+  />
+</CardGrid>
+
+## Pilot Projects {#pilot-projects}
+
+私たちはデータ研究者や研究機関と緊密に連携し、Frictionless をワークフローに統合する手助けをしている。各パイロットをクリックすると詳細を確認できる。
+
+<CardGrid>
+<ImageLinkCard
+  title="BCO-DMO"
+  imageSrc={adoption.bcodmo.src}
+  description="生物・化学海洋学データ管理オフィス (BCO-DMO) とのパイロット協働。"
+  href="https://frictionlessdata.io/blog/2020/02/10/frictionless-data-pipelines-for-open-ocean/"
+/>
+
+<ImageLinkCard
+  title="PUDL"
+  imageSrc={adoption.pudl.src}
+  description="米国のエネルギーデータの利便性向上を目指す Public Utility Data Liberation プロジェクト (PUDL) とのパイロット協働。"
+  href="https://frictionlessdata.io/blog/2020/03/18/frictionless-data-pilot-study/"
+/>
+
+<ImageLinkCard
+  title="Data Readiness Group"
+  imageSrc={adoption.oxford.src}
+  description="オックスフォード大学の Dr. Philippe Rocca-Serra が率いる Data Readiness Group とのパイロット協働。データパッケージ仕様を用いて、科学実験結果の報告を効率化することに焦点を当てている。"
+  href="https://blog.okfn.org/2020/07/21/clarifying-the-semantics-of-data-matrices-and-results-tables-a-frictionless-data-pilot/"
+/>
+
+<ImageLinkCard
+  title="Data Management for TEDDINET"
+  imageSrc={adoption.dm4t.src}
+  description="建物のエネルギー需要の変革に取り組む研究ネットワークである TEDDINET プロジェクトにおいて、データの遺産化(レガシー)に関する課題に取り組むため、Frictionless Data のアプローチを適用するパイロット協働。"
+  href="https://frictionlessdata.io/blog/2017/12/19/dm4t/"
+/>
+
+<ImageLinkCard
+  title="Western Pennsylvania Regional Data Center"
+  imageSrc={adoption.uop.src}
+  description="ピッツバーグ大学の都市・社会研究センターの一部である Western Pennsylvania Regional Data Center とともに、CKAN ベースのオープンデータポータルにおけるデータセットの品質と記述を詳しく示す実装を紹介するパイロット協働。"
+  href="https://frictionlessdata.io/blog/2017/12/15/university-of-pittsburgh/"
+/>
+
+<ImageLinkCard
+  title="UK Data Service"
+  imageSrc={adoption.ukds.src}
+  description="英国のデータ環境において、データ品質の評価・報告を行い、またデータとメタデータから可視化を生成するために Frictionless Data ソフトウェアを活用するパイロット協働。"
+  href="https://frictionlessdata.io/blog/2017/12/12/ukds/"
+/>
+
+<ImageLinkCard
+  title="eLife"
+  imageSrc={adoption.elife.src}
+  description="eLife がホストするすべての科学研究データセットの検証に goodtables ライブラリを用いることを探究し、ライフサイエンスおよび生物医学分野でのオープンデータの再利用を提唱するパイロット協働。"
+  href="https://frictionlessdata.io/blog/2017/10/24/elife/"
+/>
+
+<ImageLinkCard
+  title="University of Cambridge - Retinal Mosaics"
+  imageSrc={adoption.cambridge.src}
+  description="神経系の発生に関する研究で用いられる計算手法を支援するため、データのパッケージングと読み取りに Frictionless ソフトウェアを試用するパイロット協働。"
+  href="https://frictionlessdata.io/blog/2017/08/15/university-of-cambridge/"
+/>
+
+<ImageLinkCard
+  title="Pacific Northwest National Laboratory - Active Data Biology"
+  imageSrc={adoption.pnnl.src}
+  description="GitHub 上でホストされる生物学アプリケーションにおいて、表形式データのスキーマ生成とメタデータ検証に Frictionless Data の仕様とソフトウェアを用いることを探究するパイロット協働。"
+  href="https://frictionlessdata.io/blog/2017/06/26/pacific-northwest-national-laboratory-active-data-biology/"
+/>
+
+<ImageLinkCard
+  title="Causa Natura - Pescando Datos"
+  imageSrc={adoption.causanatura.src}
+  description="Causa Natura プロジェクト内でデータ検証ソフトウェアを活用し、データ品質を高めることで、漁業コミュニティや支援団体を支えるパイロット協働。"
+  href="https://frictionlessdata.io/blog/2017/08/15/causa-natura-pescando-datos/"
+/>
+</CardGrid>
+
+## Community Projects {#community-projects}
+
+私たちのコミュニティがデータパッケージの上に構築したプロジェクトの一覧を以下に示す。あなたのプロジェクトをここに掲載したい場合は、ぜひお知らせいただきたい。
+
+<CardGrid>
+<ImageLinkCard
+  title="European Commission"
+  imageSrc={adoption.eucom.src}
+  description="欧州委員会は、ISA² 相互運用性テストベッドの一環として、表形式データパッケージ仕様を用いた CSV スキーマ検証ツールを公開した。"
+  href="https://frictionlessdata.io/blog/2021/06/28/frictionless-specs-european-commission/"
+/>
+
+<ImageLinkCard
+  title="GitHub"
+  imageSrc={adoption.github.src}
+  description="GitHub は一部の研究プロジェクトでデータパッケージ標準を利用している。"
+  href="https://github.com/github/innovationgraph"
+/>
+
+<ImageLinkCard
+  title="GBIF"
+  imageSrc={adoption.gbif.src}
+  description="地球規模生物多様性情報機構 (GBIF) は、生物多様性データを公開する形式としてデータパッケージを利用している。"
+  href="https://www.gbif.org/news/3b0zVJSYPpzuFQ83F8v13q/gbif-releases-ipt-version-3"
+/>
+
+<ImageLinkCard
+  title="Validata"
+  imageSrc={adoption.validata.src}
+  description="OpenDataFrance は、表形式データパッケージ仕様を用いて、フランスの地方公共団体が Web 上で CSV ファイルを検証するためのプラットフォーム Validata を開発した。"
+  href="https://frictionlessdata.io/blog/2020/04/23/table-schema-catalog/"
+/>
+
+<ImageLinkCard
+  title="Gapminder"
+  imageSrc={adoption.gapminder2.src}
+  description="Gapminder は、世界に関する誤解と闘う独立した教育非営利団体である。基盤となる DDFcsv データ形式の中核としてデータパッケージ標準を利用している。"
+  href="https://open-numbers.github.io/ddf.html"
+/>
+
+<ImageLinkCard
+  title="Libraries Hacked"
+  imageSrc={adoption.librariesHacked.src}
+  description="Libraries Hacked は、図書館におけるオープンデータの活用を促進するために 2014 年に始まったプロジェクト。"
+  href="https://frictionlessdata.io/blog/2022/02/07/libraries-hacked/"
+/>
+
+<ImageLinkCard
+  title="HubMAP"
+  imageSrc={adoption.hubmap.src}
+  description="HuBMAP は、細胞レベルでの人体のオープンかつグローバルなアトラスを作成している。"
+  href="https://frictionlessdata.io/blog/2021/02/04/tableschema-to-template/"
+/>
+
+<ImageLinkCard
+  title="Etalab"
+  imageSrc={adoption.etalab.src}
+  description="フランスの省庁横断デジタルサービスの一部門である Etalab は、schema.data.gouv.fr を公開した。"
+  href="https://frictionlessdata.io/blog/2020/05/22/etalab-case-study-schemas-data-gouv-fr/"
+/>
+
+<ImageLinkCard
+  title="Nimble Learn - datapackage-m"
+  imageSrc={adoption.nimblelearn.src}
+  description="Power BI Desktop および Excel 向け Power Query で表形式データパッケージを扱うために、Power Query M で記述された一連の関数。"
+  href="https://frictionlessdata.io/blog/2018/07/20/nimblelearn/"
+/>
+
+<ImageLinkCard
+  title="Nimble Learn - Datapackage-connector"
+  imageSrc={adoption.nimblelearn.src}
+  description="表形式データパッケージから 1 つ以上のテーブルを Power BI に読み込む Power BI カスタムコネクタ。"
+  href="https://frictionlessdata.io/blog/2019/07/22/nimblelearn-dpc/"
+/>
+<ImageLinkCard
+  title="Zegami"
+  imageSrc={adoption.zegami.src}
+  description="Zegami は、自社のビジュアルデータ分析プラットフォームにおけるデータ管理と構文解析に Frictionless Data の仕様を利用している。"
+  href="https://frictionlessdata.io/blog/2017/09/28/zegami/"
+/>
+
+<ImageLinkCard
+  title="Center for Data Science and Public Policy, Workforce Data Initiative"
+  imageSrc={adoption.chicago.src}
+  description="州および地方の労働力委員会によるデータの管理と公開を支援している。"
+  href="https://frictionlessdata.io/blog/2017/08/15/center-for-data-science-and-public-policy-workforce-data-initiative/"
+/>
+
+<ImageLinkCard
+  title="Cell Migration Standardization Organization"
+  imageSrc={adoption.cmso.src}
+  description="Frictionless Data の仕様を用いて細胞遊走データをパッケージ化し、データ分析と可視化の作成のために Pandas に読み込んでいる。"
+  href="https://frictionlessdata.io/blog/2017/05/23/cmso/"
+/>
+
+<ImageLinkCard
+  title="Collections as Data Facets - Carnegie Museum of Art Collection Data"
+  imageSrc={adoption.cmoa.src}
+  description="カーネギー美術館のコレクションデータを公開アクセスおよび創造的利用のために公開する際に、Frictionless Data の仕様を活用している。"
+  href="https://frictionlessdata.io/blog/2017/08/09/collections-as-data/"
+/>
+
+<ImageLinkCard
+  title="OpenML"
+  imageSrc={adoption.openml.src}
+  description="OpenML は機械学習向けのオンラインプラットフォームおよびサービスであり、機械学習とデータ分析をシンプルにすることを目標としている。"
+  href="https://frictionlessdata.io/blog/2017/12/04/openml/"
+/>
+
+<ImageLinkCard
+  title="The Data Retriever"
+  imageSrc={adoption.dataRetriever.src}
+  description="Data Retriever は、一般公開されているデータのメタデータを生成・パッケージ化するために Frictionless Data の仕様を利用している。"
+  href="https://frictionlessdata.io/blog/2017/05/24/the-data-retriever/"
+/>
+
+<ImageLinkCard
+  title="Tesera"
+  imageSrc={adoption.tesera.src}
+  description="Tesera は、さまざまなシステムやコンポーネントで利用できるようデータをパッケージ化するために Frictionless Data の仕様を利用している。"
+  href="https://frictionlessdata.io/blog/2016/11/15/tesera/"
+/>
+
+<ImageLinkCard
+  title="data.world"
+  imageSrc={adoption.dataworld.src}
+  description="data.world は、アップロードされたデータセットに関するスキーマとメタデータを生成し、それら 3 つすべてを表形式データパッケージにまとめるために Frictionless Data の仕様を利用している。"
+  href="https://frictionlessdata.io/blog/2017/04/11/dataworld/"
+/>
+
+<ImageLinkCard
+  title="John Snow Labs"
+  imageSrc={adoption.johnSnowLabs.src}
+  description="John Snow Labs は、分析のためにデータをユーザーに提供する目的で Frictionless Data の仕様を利用している。"
+  href="https://frictionlessdata.io/blog/2017/03/28/john-snow-labs/"
+/>
+
+<ImageLinkCard
+  title="Open Power System Data"
+  imageSrc={adoption.opsd.src}
+  description="Open Power System Data は、分析とモデリングのためにエネルギーデータを提供する目的で Frictionless Data の仕様を利用している。"
+  href="https://frictionlessdata.io/blog/2016/11/15/open-power-system-data/"
+/>
+
+<ImageLinkCard
+  title="Dataship"
+  imageSrc={adoption.dataship.src}
+  description="Dataship は、データ分析向けに容易に実行・編集・共有できるノートブックの基盤として Frictionless Data の仕様を利用していた。"
+  href="https://frictionlessdata.io/blog/2016/11/15/dataship/"
+/>
+</CardGrid>
