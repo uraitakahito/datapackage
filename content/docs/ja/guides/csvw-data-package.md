@@ -4,7 +4,7 @@ sidebar:
   order: 3
 ---
 
-> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳です。
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージスタンダードの有志による日本語訳です。
 > 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照してください。
 
 <table>
@@ -14,7 +14,7 @@ sidebar:
   </tr>
 </table>
 
-2016 年、W3C により設立されたワーキンググループが、CSV ファイルを文書化しアクセスするための一連の勧告を作成した。これらは総称して [CSVW on the Web (CSVW)](https://www.w3.org/TR/2016/NOTE-tabular-data-primer-20160225/) と呼ばれる。CSVW はデータパッケージ標準と多くの類似点を示す。
+2016 年、W3C により設立されたワーキンググループが、CSV ファイルを文書化しアクセスするための一連の勧告を作成した。これらは総称して [CSVW on the Web (CSVW)](https://www.w3.org/TR/2016/NOTE-tabular-data-primer-20160225/) と呼ばれる。CSVW はデータパッケージスタンダードと多くの類似点を示す。
 
 以下では、CSVW とデータパッケージの(非)類似点の概観を示す。
 

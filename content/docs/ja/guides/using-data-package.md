@@ -4,10 +4,10 @@ sidebar:
   order: 1
 ---
 
-> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳です。
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージスタンダードの有志による日本語訳です。
 > 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照してください。
 
-データパッケージ標準の実装には数多くの選択肢がある。ここでは、出発点として適した、もっとも人気のある選択肢をいくつか取り上げる。
+データパッケージスタンダードの実装には数多くの選択肢がある。ここでは、出発点として適した、もっとも人気のある選択肢をいくつか取り上げる。
 
 :::tip
 他の実装を探すには、データパッケージの[ソフトウェア](/overview/software/)の全一覧も参照されたい。
@@ -15,7 +15,7 @@ sidebar:
 
 ## Open Data Editor {#open-data-editor}
 
-データパッケージ標準を使い始めるもっとも簡単な方法は、[Open Data Editor](https://opendataeditor.okfn.org/)(現在ベータ版)をインストールすることである。
+データパッケージスタンダードを使い始めるもっとも簡単な方法は、[Open Data Editor](https://opendataeditor.okfn.org/)(現在ベータ版)をインストールすることである。
 
 [![Open Data Editor](../../../../assets/software/ode.png)](https://opendataeditor.okfn.org)
 

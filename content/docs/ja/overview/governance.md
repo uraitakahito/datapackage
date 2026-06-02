@@ -4,10 +4,10 @@ sidebar:
   order: 7
 ---
 
-> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳です。
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージスタンダードの有志による日本語訳です。
 > 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照してください。
 
-データパッケージ標準は、さまざまな分野から集まった [Frictionless](https://frictionlessdata.io/) コミュニティのメンバーで構成されるワーキンググループによって統治されている。
+データパッケージスタンダードは、さまざまな分野から集まった [Frictionless](https://frictionlessdata.io/) コミュニティのメンバーで構成されるワーキンググループによって統治されている。
 
 ワーキンググループは非同期で作業を進めており、仕様に対するあらゆる変更にレビューモデルを用いている。また、ワーキンググループ向けの[月次の更新通話](https://forms.gle/UEqGnYKESqqw1LeW7)も開催しているが、これはもちろん必須ではなく、より広範なコミュニティにも開かれている。
 

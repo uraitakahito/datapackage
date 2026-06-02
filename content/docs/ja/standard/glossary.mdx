@@ -1,6 +1,6 @@
 ---
 title: 用語集
-description: データパッケージ標準で用いられる用語の用語集。
+description: データパッケージスタンダードで用いられる用語の用語集。
 sidebar:
   order: 6
 authors:
@@ -12,7 +12,7 @@ authors:
   - Data Package Working Group
 ---
 
-> **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳です。
+> **非公式翻訳 (Unofficial translation).** これはデータパッケージスタンダードの有志による日本語訳です。
 > 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照してください。
 
 <table>
@@ -41,7 +41,7 @@ authors:
 
 [JSON Schema](https://json-schema.org/understanding-json-schema/reference/schema#schema) と同様に、`$schema` プロパティはディスクリプタのルートレベルでのみ効果を持つ。例えば、Table Dialect がファイルとして公開される場合、その検証に影響する `$schema` プロパティを含めることができる。同じ dialect がデータパッケージのディスクリプタにインライン展開されたオブジェクトである場合、その dialect の `$schema` プロパティは無視されなければならず (`MUST`)、ディスクリプタ全体はパッケージが提供するルートレベルの `$schema` プロパティに対して検証されなければならない (`MUST`)。
 
-データパッケージ標準は、[Extensions](/standard/extensions) 仕様のとおり、拡張を作成する仕組みとしてプロファイルを採用している。
+データパッケージスタンダードは、[Extensions](/standard/extensions) 仕様のとおり、拡張を作成する仕組みとしてプロファイルを採用している。
 
 :::note[実装ノート]
 プロファイルは、その URL を一意なキーとしてキャッシュすることが推奨される。
@@ -49,7 +49,7 @@ authors:
 
 ### ディスクリプタ {#descriptor}
 
-データパッケージ標準では、データパッケージやテーブルスキーマといったコア仕様に従って定義されたメタデータを表現するために、`ディスクリプタ` という概念を用いる。
+データパッケージスタンダードでは、データパッケージやテーブルスキーマといったコア仕様に従って定義されたメタデータを表現するために、`ディスクリプタ` という概念を用いる。
 
 論理レベルでは、ディスクリプタはデータ構造で表現される。そのデータ構造は、[RFC 4627](http://www.ietf.org/rfc/rfc4627.txt) で定義される JSON の `object` でなければならない (`MUST`)。
 
