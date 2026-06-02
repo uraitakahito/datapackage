@@ -52,7 +52,12 @@ export default defineConfig({
   outDir: "build",
   integrations: [
     starlight({
-      title: "Data Package Standard",
+      // タイトルは言語コード別。ja は固有名詞を音訳した「データパッケージスタンダード」。
+      // キーは locale の lang(root の lang は "en")。
+      title: {
+        en: "Data Package Standard",
+        ja: "データパッケージスタンダード",
+      },
       // i18n: 英語=root locale / 日本語=ja。英語ファイルは触らず ja/ に追加するだけなので
       // upstream 追従マージが無競合になる。未訳ページは英語へ自動フォールバック。
       defaultLocale: "root",

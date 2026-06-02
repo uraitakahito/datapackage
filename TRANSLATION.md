@@ -24,7 +24,7 @@
 - 各ページ冒頭(frontmatter 直後)に注記ブロックを付ける:
 
   ```md
-  > **非公式翻訳 (Unofficial translation).** これはデータパッケージ標準の有志による日本語訳です。
+  > **非公式翻訳 (Unofficial translation).** これはデータパッケージスタンダードの有志による日本語訳です。
   > 正典は英語原典 [datapackage.org](https://datapackage.org) 。未訳の箇所は英語の原文を参照。
   ```
 
