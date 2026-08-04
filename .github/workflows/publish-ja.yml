@@ -38,6 +38,13 @@ jobs:
         env:
           DP_SITE: https://uraitakahito.github.io
           DP_BASE: /datapackage
+      # 出力に base の付かない内部参照が残っていないか。Astro は markdown の
+      # リンクには base を補うが HTML/JSX の属性と frontmatter には触れず、
+      # ビルドも警告を出さないので、公開して 404 を踏むまで気付けない。
+      - name: Check base URLs
+        run: npm run check:base
+        env:
+          DP_BASE: /datapackage
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build # astro.config.js の outDir

@@ -42,6 +42,12 @@ function rehypeBaseLinks() {
   }
 }
 
+// 設定ファイル自身は import.meta.env の外で評価されるので、base は
+// process.env から読む。末尾スラッシュを落として正規化しておくのは、
+// DP_BASE が "/datapackage" (スラッシュ無し) で渡ってくるため —— そのまま
+// 文字列連結すると "/datapackagefavicon.png" になる。
+const BASE = (process.env.DP_BASE ?? "").replace(/\/+$/, "")
+
 // https://astro.build/config
 export default defineConfig({
   // site/base は env 経由: 本家の apex 配信 (datapackage.org) はそのまま、
@@ -84,6 +90,8 @@ export default defineConfig({
       customCss: ["/assets/styles.css"],
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 5 },
       components: {
+        // banner は frontmatter の生 HTML で、Astro が base を補わない。
+        Banner: "./components/Banner.astro",
         MarkdownContent: "./components/MarkdownContent.astro",
         SocialIcons: "./components/SocialIcons.astro",
       },
@@ -125,7 +133,8 @@ export default defineConfig({
           tag: "link",
           attrs: {
             rel: "icon",
-            href: "/favicon.png",
+            // head の属性は Astro が base を補わないので明示する。
+            href: `${BASE}/favicon.png`,
             sizes: "256x256",
           },
         },

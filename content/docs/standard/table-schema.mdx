@@ -16,6 +16,8 @@ authors:
   - Data Package Working Group
 ---
 
+import { withBase } from "../../../lib/base"
+
 <table>
   <tr>
     <th>Authors</th>
@@ -24,7 +26,7 @@ authors:
   <tr>
     <th>Profile</th>
     <td>
-      <a href={frontmatter.profile}>{frontmatter.profile}</a>
+      <a href={withBase(frontmatter.profile)}>{frontmatter.profile}</a>
     </td>
   </tr>
 </table>
