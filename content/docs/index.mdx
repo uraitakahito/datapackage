@@ -14,11 +14,13 @@ hero:
     alt: Data Packages Illustration
   actions:
     - text: Get Started
-      link: /overview/introduction/
+      # frontmatter の hero.actions は Starlight が base を補わないので相対で書く。
+      # このページは base の直下 (/ または /datapackage/) なので相対で正しく解決する。
+      link: overview/introduction/
       icon: right-arrow
       variant: primary
     - text: Use Cases
-      link: /overview/adoption/
+      link: overview/adoption/
       icon: rocket
       variant: secondary
     - text: View on GitHub
@@ -36,6 +38,7 @@ banner:
 import About from "../../components/About.astro"
 import Adoption from "../../components/Adoption.astro"
 import ClickableCard from "../../components/ClickableCard.astro"
+import { withBase } from "../../lib/base"
 import { CardGrid, LinkCard, Card } from "@astrojs/starlight/components"
 
 <h2>Standard</h2>
@@ -43,19 +46,35 @@ import { CardGrid, LinkCard, Card } from "@astrojs/starlight/components"
 The Data Package standard is a comprehensive set of **specifications** that collectively define a framework for organizing, documenting, and sharing data in a structured and interoperable manner -- [EXPLORE THE STANDARD](/standard/data-package)
 
 <CardGrid>
-  <ClickableCard title="Data Package" icon="open-book" href="/standard/data-package">
+  <ClickableCard
+    title="Data Package"
+    icon="open-book"
+    href={withBase("/standard/data-package")}
+  >
     A simple container format to describe a coherent collection of data (a dataset),
     including its contributors, licenses, etc.
   </ClickableCard>
-  <ClickableCard title="Data Resource" icon="rocket" href="/standard/data-resource">
+  <ClickableCard
+    title="Data Resource"
+    icon="rocket"
+    href={withBase("/standard/data-resource")}
+  >
     A simple format to describe a data resource such as an individual table or file,
     including its name, format, path, etc.
   </ClickableCard>
-  <ClickableCard title="Table Dialect" icon="document" href="/standard/table-dialect">
+  <ClickableCard
+    title="Table Dialect"
+    icon="document"
+    href={withBase("/standard/table-dialect")}
+  >
     A simple format to describe the dialect of a tabular data file, including its
     delimiter, header rows, escape characters, etc.
   </ClickableCard>
-  <ClickableCard title="Table Schema" icon="puzzle" href="/standard/table-schema">
+  <ClickableCard
+    title="Table Schema"
+    icon="puzzle"
+    href={withBase("/standard/table-schema")}
+  >
     A simple format to describe tabular data, including field names, types, constraints,
     missing values, foreign keys, etc.
   </ClickableCard>
@@ -69,7 +88,7 @@ Data Package is backed by a suite of software tools supporting the standard. Fro
 
 <div style="margin-top: 10px; margin-bottom: 5em; padding: 5px; border: dashed 1px #ccc; border-radius: 15px">
   <a href="https://opendataeditor.okfn.org/">
-    <img src="/ode.png" style="border-radius: 15px" />
+    <img src={withBase("/ode.png")} style="border-radius: 15px" />
   </a>
 </div>
 
@@ -86,10 +105,10 @@ Data Package is used for a wide range of scenarios where this standardized data 
 Read the Data Package documentation to learn more about the project:
 
 <CardGrid>
-  <LinkCard title="Standard" href="/standard/data-package" />
-  <LinkCard title="Extensions" href="/extensions/camtrap-data-package" />
-  <LinkCard title="Recipes" href="/recipes/caching-of-resources" />
-  <LinkCard title="Guides" href="/guides/using-data-package" />
+  <LinkCard title="Standard" href={withBase("/standard/data-package")} />
+  <LinkCard title="Extensions" href={withBase("/extensions/camtrap-data-package")} />
+  <LinkCard title="Recipes" href={withBase("/recipes/caching-of-resources")} />
+  <LinkCard title="Guides" href={withBase("/guides/using-data-package")} />
 </CardGrid>
 
 <About title="Brought to you by">

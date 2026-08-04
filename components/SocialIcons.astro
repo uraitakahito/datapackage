@@ -1,9 +1,10 @@
 ---
 import type { Props } from "@astrojs/starlight/props"
 import Default from "@astrojs/starlight/components/SocialIcons.astro"
+import { withBase } from "../lib/base"
 ---
 
-<a href="/standard/data-package/" style="text-decoration: none"
+<a href={withBase("/standard/data-package/")} style="text-decoration: none"
   ><strong>v2 (current)</strong></a
 >
 <a href="https://specs.frictionlessdata.io/"><strong>v1</strong></a>
